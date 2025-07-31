@@ -1,0 +1,183 @@
+{% include "modern_header_redesigned.html" %}
+
+<div class="main-container">
+    <!-- 语言选择和主题切换 -->
+    <div class="top-controls">
+        <div class="language-selector">
+            <select id="language-select" class="form-select compact">
+                <option value="zh">中文</option>
+                <option value="en">English</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- 主要内容区域 -->
+    <div class="content-area">
+        <div class="content-header">
+            <h1 class="content-title" data-i18n="title">剪切板</h1>
+            <p class="content-subtitle" data-i18n="subtitle">快速分享文本和文件</p>
+        </div>
+
+        <form id="pasta-form" action="upload" method="POST" enctype="multipart/form-data" class="paste-form">
+            <!-- 主要内容输入区域 -->
+            <div class="content-input-section">
+                <label for="content-input" class="content-label" data-i18n="content_label">内容</label>
+                <textarea
+                    name="content"
+                    id="content-input"
+                    class="form-textarea auto-resize"
+                    placeholder="在这里输入内容..."
+                    data-i18n-placeholder="content_placeholder"
+                    autofocus
+                ></textarea>
+                
+                <!-- 文件上传区域 -->
+                <div class="file-upload-area" id="file-upload-area">
+                    <div class="file-upload-content">
+                        <svg class="file-upload-icon" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                        </svg>
+                        <p class="file-upload-text" data-i18n="file_upload">拖拽文件到这里或点击选择</p>
+                        <input type="file" id="file" name="file" class="file-input" hidden>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 设置面板 -->
+            <div class="settings-panel" id="settings-panel">
+                <button type="button" class="settings-toggle" id="settings-toggle">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span data-i18n="settings">设置</span>
+                </button>
+
+                <div class="settings-content" id="settings-content">
+                    <div class="settings-grid">
+                        <!-- 过期时间 -->
+                        <div class="form-group">
+                            <label for="expiration" class="form-label" data-i18n="expiration">过期时间</label>
+                            <select name="expiration" id="expiration" class="form-select">
+                                <optgroup label="过期时间" data-i18n="expire_after">
+                                    <option value="1min" data-i18n="1min">1分钟</option>
+                                    <option value="10min" data-i18n="10min">10分钟</option>
+                                    <option value="1hour" data-i18n="1hour">1小时</option>
+                                    <option value="24hour" data-i18n="24hour">24小时</option>
+                                    <option value="3days" data-i18n="3days">3天</option>
+                                    <option value="1week" data-i18n="1week">1周</option>
+                                </optgroup>
+                                <option value="never" selected data-i18n="never">永不过期</option>
+                            </select>
+                        </div>
+
+                        <!-- 阅读后销毁 -->
+                        <div class="form-group">
+                            <label for="burn_after_reads" class="form-label" data-i18n="burn_after">阅读后销毁</label>
+                            <select name="burn_after_reads" id="burn_after_reads" class="form-select">
+                                <option value="0" selected data-i18n="no_limit">无限制</option>
+                                <optgroup label="销毁条件" data-i18n="burn_after_reads">
+                                    <option value="1" data-i18n="first_read">首次阅读</option>
+                                    <option value="10" data-i18n="10th_read">第10次阅读</option>
+                                    <option value="100" data-i18n="100th_read">第100次阅读</option>
+                                    <option value="1000" data-i18n="1000th_read">第1000次阅读</option>
+                                    <option value="10000" data-i18n="10000th_read">第10000次阅读</option>
+                                </optgroup>
+                            </select>
+                        </div>
+
+                        <!-- 语法高亮 -->
+                        <div class="form-group">
+                            <label for="syntax_highlight" class="form-label" data-i18n="syntax">语法高亮</label>
+                            <select name="syntax_highlight" id="syntax_highlight" class="form-select">
+                                <option value="none" selected data-i18n="none">无</option>
+                                <optgroup label="客户端渲染" data-i18n="client_rendered">
+                                    <option value="auto" data-i18n="automatic">自动检测</option>
+                                </optgroup>
+                                <optgroup label="服务端渲染" data-i18n="server_rendered">
+                                    <option value="sh">Bash Shell</option>
+                                    <option value="c">C</option>
+                                    <option value="cpp">C++</option>
+                                    <option value="cs">C#</option>
+                                    <option value="go">Go</option>
+                                    <option value="html">HTML</option>
+                                    <option value="java">Java</option>
+                                    <option value="js">JavaScript</option>
+                                    <option value="py">Python</option>
+                                    <option value="rs">Rust</option>
+                                    <option value="json">JSON</option>
+                                    <option value="xml">XML</option>
+                                </optgroup>
+                            </select>
+                        </div>
+
+                        <!-- 隐私设置 -->
+                        <div class="form-group">
+                            <label for="privacy" class="form-label" data-i18n="privacy">隐私设置</label>
+                            <select name="privacy" id="privacy" class="form-select">
+                                <optgroup label="未加密（无密码）" data-i18n="unencrypted_no_password">
+                                    <option value="public" selected data-i18n="public">公开</option>
+                                </optgroup>
+                                {% if args.enable_readonly %}
+                                <optgroup label="未加密（受保护）" data-i18n="unencrypted_protected">
+                                    <option value="readonly" data-i18n="readonly">只读</option>
+                                </optgroup>
+                                {%- endif %}
+                                {% if args.encryption_server_side || args.encryption_client_side %}
+                                <optgroup label="加密" data-i18n="encrypted">
+                                    <option value="secret" data-i18n="secret">加密</option>
+                                </optgroup>
+                                {%- endif %}
+                            </select>
+                        </div>
+
+                        <!-- 密码字段（条件显示） -->
+                        <div class="form-group" id="password-group" style="display: none;">
+                            <label for="password_field" class="form-label" data-i18n="password">密码</label>
+                            <input 
+                                type="password" 
+                                name="password" 
+                                id="password_field" 
+                                class="form-input" 
+                                placeholder="输入密码"
+                                data-i18n-placeholder="password_placeholder"
+                                autocomplete="new-password"
+                            >
+                        </div>
+
+                        <!-- 自定义路径 -->
+                        <div class="form-group">
+                            <label for="custom_path" class="form-label" data-i18n="custom_path">自定义路径</label>
+                            <input 
+                                type="text" 
+                                name="custom_path" 
+                                id="custom_path" 
+                                class="form-input" 
+                                placeholder="my-paste"
+                                data-i18n-placeholder="custom_path_placeholder"
+                                {% if custom_path.is_some() %}value="{{ custom_path.as_ref().unwrap() }}"{% endif %}
+                            >
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 操作按钮 -->
+            <div class="action-buttons">
+                <button type="submit" class="btn btn-primary btn-large" id="submit-button">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span data-i18n="save">保存</span>
+                </button>
+            </div>
+
+            <!-- 隐藏字段 -->
+            <input type="hidden" name="encrypt_client" id="encrypt_client">
+            <input type="hidden" name="encrypted_random_key" id="encrypted_random_key" autocomplete="off">
+            <input type="hidden" name="random_key" id="random_key">
+            <input type="hidden" name="plain_key" id="plain_key">
+        </form>
+    </div>
+</div>
+
+{% include "modern_footer_redesigned.html" %}

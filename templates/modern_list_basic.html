@@ -1,0 +1,93 @@
+{% include "modern_header_enhanced.html" %}
+
+<div class="card">
+    <h1>All Pastes ({{ pastas|length }} total)</h1>
+    <a href="/" class="btn btn-primary">New Paste</a>
+</div>
+
+<div class="card">
+    <input type="text" id="search-input" placeholder="Search pastes..." onkeyup="filterPastas()">
+</div>
+
+<div id="pasta-list">
+    {% for pasta in pastas %}
+    <div class="pasta-item card">
+        <h3>
+            <a href="/{{pasta.get_path()}}">
+                {% if pasta.custom_path.is_some() %}
+                {{ pasta.custom_path.as_ref().unwrap() }}
+                {% elif pasta.file.is_some() %}
+                {{ pasta.file.as_ref().unwrap().name }}
+                {% else %}
+                {{ pasta.id_as_animals() }}
+                {%- endif %}
+            </a>
+        </h3>
+        
+        {% if pasta.pasta_type == "url" %}
+        <p>🔗 {{ pasta.content }}</p>
+        {% elif pasta.file.is_some() %}
+        <p>📎 {{ pasta.file.as_ref().unwrap().name }} ({{ pasta.file.as_ref().unwrap().size }} bytes)</p>
+        {% elif pasta.content != "" %}
+        <p>{{ pasta.content|truncate(length=150) }}</p>
+        {%- endif %}
+        
+        <div>
+            <span>{{ pasta.created_as_string() }}</span>
+            {% if pasta.expiration != 0 %}
+            <span>Expires {{ pasta.expiration_as_string() }}</span>
+            {%- endif %}
+            {% if pasta.burn_after_reads != 0 %}
+            <span>🔥 {{ pasta.burn_after_reads }} reads</span>
+            {%- endif %}
+            {% if pasta.extension != "" %}
+            <span>{{ pasta.extension }}</span>
+            {%- endif %}
+        </div>
+        
+        <button class="copy-button btn" data-url="/{{pasta.get_path()}}">Copy</button>
+    </div>
+    {% endfor %}
+</div>
+
+<div id="empty-state" style="display: none;">
+    <h3>No pastes found</h3>
+    <a href="/" class="btn">Create Your First Paste</a>
+</div>
+
+<script>
+    const copyURLBtns = document.querySelectorAll('.copy-button');
+    for (let i = 0; i < copyURLBtns.length; i++) {
+        copyURLBtns.item(i).addEventListener("click", event => {
+            const element = event.currentTarget;
+            const url = window.location.origin + element.getAttribute("data-url");
+            copyToClipboard(url, element);
+        });
+    }
+
+    function filterPastas() {
+        const searchTerm = document.getElementById('search-input').value.toLowerCase();
+        const pastaItems = document.querySelectorAll('.pasta-item');
+        let visibleCount = 0;
+
+        pastaItems.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            
+            if (!searchTerm || text.includes(searchTerm)) {
+                item.style.display = 'block';
+                visibleCount++;
+            } else {
+                item.style.display = 'none';
+            }
+        });
+
+        const emptyState = document.getElementById('empty-state');
+        if (visibleCount === 0) {
+            emptyState.style.display = 'block';
+        } else {
+            emptyState.style.display = 'none';
+        }
+    }
+</script>
+
+{% include "modern_footer_enhanced.html" %}

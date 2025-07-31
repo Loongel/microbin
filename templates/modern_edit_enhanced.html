@@ -1,0 +1,496 @@
+{% include "modern_header_enhanced.html" %}
+
+<!-- 编辑状态提示 -->
+{% if status != "" %}
+<div class="alert alert-info">
+    <div class="flex items-center gap-3">
+        <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+        </svg>
+        <span>{{ status }}</span>
+    </div>
+</div>
+{%- endif %}
+
+<!-- 编辑表单 -->
+<div class="card">
+    <div class="card-header">
+        <div class="flex justify-between items-start gap-4">
+            <div>
+                <h1 class="card-title gradient-text">Edit Paste</h1>
+                <p class="card-description">
+                    Editing: 
+                    {% if pasta.custom_path.is_some() %}
+                    <strong>{{ pasta.custom_path.as_ref().unwrap() }}</strong>
+                    {% else %}
+                    <strong>{{ pasta.id_as_animals() }}</strong>
+                    {%- endif %}
+                </p>
+            </div>
+            
+            <!-- 快速操作 -->
+            <div class="action-buttons">
+                <a href="/{{ pasta.get_path() }}" class="btn btn-outline btn-sm">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"></path>
+                    </svg>
+                    Back to Paste
+                </a>
+                
+                <button id="preview-button" class="btn btn-outline btn-sm" onclick="togglePreview()">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"></path>
+                        <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"></path>
+                    </svg>
+                    Preview
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <form id="edit-form" action="/edit/{{ pasta.id_as_animals() }}" method="POST" class="form">
+        <!-- 主要内容编辑区域 -->
+        <div class="form-group">
+            <label for="content" class="form-label">
+                Content
+                <span class="text-tertiary text-sm font-normal">Edit your paste content</span>
+            </label>
+            <div class="relative">
+                <textarea 
+                    name="content" 
+                    id="content" 
+                    class="form-textarea" 
+                    rows="15"
+                    spellcheck="false"
+                    placeholder="Edit your content here..."
+                >{{ pasta.content }}</textarea>
+                
+                <!-- 字符计数器 -->
+                <div class="absolute bottom-3 right-3 text-xs text-tertiary bg-surface px-2 py-1 rounded">
+                    <span id="char-count">{{ pasta.content|length }}</span> characters
+                </div>
+            </div>
+        </div>
+
+        <!-- 设置网格 -->
+        <div class="settings-grid">
+            <!-- 过期时间 -->
+            <div class="form-group">
+                <label for="expiration" class="form-label">
+                    Expiration
+                    <a href="/guide#expiration" class="form-help" data-tooltip="Learn about expiration options">?</a>
+                </label>
+                <select name="expiration" id="expiration" class="form-select">
+                    <optgroup label="Expire after">
+                        {% if pasta.expiration_as_string() == "1 minute" %}
+                        <option selected value="1min">1 minute</option>
+                        {%- else %}
+                        <option value="1min">1 minute</option>
+                        {%- endif %}
+                        
+                        {% if pasta.expiration_as_string() == "10 minutes" %}
+                        <option selected value="10min">10 minutes</option>
+                        {%- else %}
+                        <option value="10min">10 minutes</option>
+                        {%- endif %}
+                        
+                        {% if pasta.expiration_as_string() == "1 hour" %}
+                        <option selected value="1hour">1 hour</option>
+                        {%- else %}
+                        <option value="1hour">1 hour</option>
+                        {%- endif %}
+                        
+                        {% if pasta.expiration_as_string() == "24 hours" %}
+                        <option selected value="24hour">24 hours</option>
+                        {%- else %}
+                        <option value="24hour">24 hours</option>
+                        {%- endif %}
+                        
+                        {% if pasta.expiration_as_string() == "3 days" %}
+                        <option selected value="3days">3 days</option>
+                        {%- else %}
+                        <option value="3days">3 days</option>
+                        {%- endif %}
+                        
+                        {% if pasta.expiration_as_string() == "1 week" %}
+                        <option selected value="1week">1 week</option>
+                        {%- else %}
+                        <option value="1week">1 week</option>
+                        {%- endif %}
+                    </optgroup>
+                    
+                    {% if args.eternal_pasta %}
+                    {% if pasta.expiration == 0 %}
+                    <option selected value="never">Never Expire</option>
+                    {%- else %}
+                    <option value="never">Never Expire</option>
+                    {%- endif %}
+                    {%- endif %}
+                </select>
+            </div>
+
+            <!-- 隐私设置 -->
+            <div class="form-group">
+                <label for="privacy" class="form-label">
+                    Privacy
+                    <a href="/guide#privacy" class="form-help" data-tooltip="Learn about privacy options">?</a>
+                </label>
+                <select name="privacy" id="privacy" class="form-select">
+                    {% if pasta.private %}
+                    <option value="public">🌍 Public - Visible to everyone</option>
+                    <option selected value="private">🔒 Private - Password protected</option>
+                    <option value="unlisted">👁️ Unlisted - Hidden from lists</option>
+                    {% elif pasta.readonly %}
+                    <option value="public">🌍 Public - Visible to everyone</option>
+                    <option value="private">🔒 Private - Password protected</option>
+                    <option selected value="unlisted">👁️ Unlisted - Hidden from lists</option>
+                    {% else %}
+                    <option selected value="public">🌍 Public - Visible to everyone</option>
+                    <option value="private">🔒 Private - Password protected</option>
+                    <option value="unlisted">👁️ Unlisted - Hidden from lists</option>
+                    {%- endif %}
+                </select>
+            </div>
+
+            <!-- 语法高亮 -->
+            <div class="form-group">
+                <label for="syntax_highlight" class="form-label">
+                    Syntax Highlighting
+                    <a href="/guide#syntax-highlighting" class="form-help" data-tooltip="Choose language for code highlighting">?</a>
+                </label>
+                <select name="syntax_highlight" id="syntax_highlight" class="form-select">
+                    {% if pasta.highlight_language.is_none() %}
+                    <option selected value="none">None</option>
+                    {%- else %}
+                    <option value="none">None</option>
+                    {%- endif %}
+                    
+                    <optgroup label="Popular Languages">
+                        <option value="javascript">JavaScript</option>
+                        <option value="python">Python</option>
+                        <option value="rust">Rust</option>
+                        <option value="html">HTML</option>
+                        <option value="css">CSS</option>
+                        <option value="json">JSON</option>
+                    </optgroup>
+                    
+                    <optgroup label="Other Languages">
+                        <option value="xml">XML</option>
+                        <option value="sql">SQL</option>
+                        <option value="bash">Bash</option>
+                        <option value="c">C</option>
+                        <option value="cpp">C++</option>
+                        <option value="java">Java</option>
+                        <option value="php">PHP</option>
+                        <option value="go">Go</option>
+                        <option value="typescript">TypeScript</option>
+                    </optgroup>
+                </select>
+            </div>
+
+            <!-- 阅读后销毁 -->
+            {% if args.enable_burn_after %}
+            <div class="form-group">
+                <label for="burn_after" class="form-label">
+                    Burn After Reading
+                    <a href="/guide#burn-after-reading" class="form-help" data-tooltip="Auto-delete after specified reads">?</a>
+                </label>
+                <select name="burn_after" id="burn_after" class="form-select">
+                    {% if pasta.burn_after == 0 %}
+                    <option selected value="0">♾️ Never</option>
+                    {%- else %}
+                    <option value="0">♾️ Never</option>
+                    {%- endif %}
+                    
+                    {% if pasta.burn_after == 1 %}
+                    <option selected value="1">🔥 1 read</option>
+                    {%- else %}
+                    <option value="1">🔥 1 read</option>
+                    {%- endif %}
+                    
+                    {% if pasta.burn_after == 10 %}
+                    <option selected value="10">🔥 10 reads</option>
+                    {%- else %}
+                    <option value="10">🔥 10 reads</option>
+                    {%- endif %}
+                    
+                    {% if pasta.burn_after == 100 %}
+                    <option selected value="100">🔥 100 reads</option>
+                    {%- else %}
+                    <option value="100">🔥 100 reads</option>
+                    {%- endif %}
+                </select>
+            </div>
+            {%- endif %}
+        </div>
+
+        <!-- 提交按钮 -->
+        <div class="action-buttons action-buttons-center mt-8">
+            <input type="submit" value="💾 Save Changes" class="btn btn-primary btn-lg">
+            <button type="button" class="btn btn-outline btn-lg" onclick="resetForm()">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"></path>
+                </svg>
+                Reset
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- 预览区域 -->
+<div id="preview-container" class="card" style="display: none;">
+    <div class="card-header">
+        <h2 class="card-title">Preview</h2>
+        <p class="card-description">Live preview of your changes</p>
+    </div>
+    
+    <div id="preview-content" class="code-block">
+        <pre><code id="preview-code"></code></pre>
+    </div>
+</div>
+
+<!-- 语法高亮 -->
+{% if args.highlightsyntax %}
+<script type="text/javascript" src="/static/highlight/highlight.min.js"></script>
+<link rel="stylesheet" href="/static/highlight/highlight.min.css">
+{%- endif %}
+
+<!-- 脚本 -->
+<script>
+    const originalContent = `{{ pasta.content }}`;
+    let previewVisible = false;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const contentTextarea = document.getElementById('content');
+        const charCount = document.getElementById('char-count');
+        
+        // 字符计数器
+        contentTextarea.addEventListener('input', function() {
+            charCount.textContent = this.value.length;
+            updatePreview();
+        });
+        
+        // 自动调整textarea高度
+        adjustTextareaHeight(contentTextarea);
+        contentTextarea.addEventListener('input', function() {
+            adjustTextareaHeight(this);
+        });
+        
+        // 表单提交确认
+        document.getElementById('edit-form').addEventListener('submit', function(e) {
+            if (contentTextarea.value !== originalContent) {
+                const confirmSave = confirm('Are you sure you want to save these changes?');
+                if (!confirmSave) {
+                    e.preventDefault();
+                    return false;
+                }
+            }
+        });
+        
+        // 防止意外离开页面
+        window.addEventListener('beforeunload', function(e) {
+            if (contentTextarea.value !== originalContent) {
+                e.preventDefault();
+                e.returnValue = '';
+                return '';
+            }
+        });
+        
+        // 键盘快捷键
+        document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + S: 保存
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                document.getElementById('edit-form').submit();
+            }
+            
+            // Ctrl/Cmd + P: 预览
+            if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+                e.preventDefault();
+                togglePreview();
+            }
+            
+            // Escape: 关闭预览
+            if (e.key === 'Escape' && previewVisible) {
+                togglePreview();
+            }
+        });
+    });
+
+    function adjustTextareaHeight(textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = Math.max(textarea.scrollHeight, 200) + 'px';
+    }
+
+    function resetForm() {
+        if (confirm('Are you sure you want to reset all changes? This will restore the original content.')) {
+            document.getElementById('content').value = originalContent;
+            document.getElementById('char-count').textContent = originalContent.length;
+            adjustTextareaHeight(document.getElementById('content'));
+            updatePreview();
+        }
+    }
+
+    function togglePreview() {
+        const previewContainer = document.getElementById('preview-container');
+        const previewButton = document.getElementById('preview-button');
+        
+        previewVisible = !previewVisible;
+        
+        if (previewVisible) {
+            previewContainer.style.display = 'block';
+            previewContainer.classList.add('animate-fade-in');
+            previewButton.innerHTML = `
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clip-rule="evenodd"></path>
+                    <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z"></path>
+                </svg>
+                Hide Preview
+            `;
+            updatePreview();
+            
+            // 滚动到预览区域
+            previewContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+            previewContainer.style.display = 'none';
+            previewContainer.classList.remove('animate-fade-in');
+            previewButton.innerHTML = `
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"></path>
+                    <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"></path>
+                </svg>
+                Preview
+            `;
+        }
+    }
+
+    function updatePreview() {
+        if (!previewVisible) return;
+        
+        const content = document.getElementById('content').value;
+        const language = document.getElementById('syntax_highlight').value;
+        const previewCode = document.getElementById('preview-code');
+        
+        previewCode.textContent = content;
+        previewCode.className = language !== 'none' ? `language-${language}` : '';
+        
+        // 应用语法高亮
+        {% if args.highlightsyntax %}
+        if (typeof hljs !== 'undefined') {
+            hljs.highlightElement(previewCode);
+        }
+        {%- endif %}
+    }
+
+    // 语法高亮选择器变化时更新预览
+    document.getElementById('syntax_highlight').addEventListener('change', updatePreview);
+
+    // 添加编辑器增强功能
+    const contentTextarea = document.getElementById('content');
+    
+    // Tab键支持
+    contentTextarea.addEventListener('keydown', function(e) {
+        if (e.key === 'Tab') {
+            e.preventDefault();
+            const start = this.selectionStart;
+            const end = this.selectionEnd;
+            
+            // 插入tab字符
+            this.value = this.value.substring(0, start) + '    ' + this.value.substring(end);
+            this.selectionStart = this.selectionEnd = start + 4;
+        }
+    });
+
+    // 添加保存状态指示器
+    const style = document.createElement('style');
+    style.textContent = `
+        .save-indicator {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: var(--color-success);
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-lg);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-100px);
+            transition: transform var(--duration-normal) var(--ease-out);
+            z-index: 1000;
+        }
+        
+        .save-indicator.show {
+            transform: translateY(0);
+        }
+        
+        .unsaved-changes {
+            border-left: 4px solid var(--color-warning) !important;
+        }
+        
+        .keyboard-shortcuts {
+            position: fixed;
+            bottom: 2rem;
+            left: 2rem;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-lg);
+            padding: 1rem;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            box-shadow: var(--shadow-lg);
+            opacity: 0;
+            transform: translateX(-100px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .keyboard-shortcuts.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .keyboard-shortcuts kbd {
+            background: var(--bg-code);
+            border: 1px solid var(--border-primary);
+            border-radius: 0.25rem;
+            padding: 0.125rem 0.25rem;
+            font-family: monospace;
+            font-size: 0.75rem;
+            margin: 0 0.125rem;
+        }
+    `;
+    document.head.appendChild(style);
+
+    // 显示键盘快捷键提示
+    setTimeout(() => {
+        const shortcuts = document.createElement('div');
+        shortcuts.className = 'keyboard-shortcuts';
+        shortcuts.innerHTML = `
+            <div style="margin-bottom: 0.5rem; font-weight: 600;">Keyboard Shortcuts:</div>
+            <div><kbd>Ctrl</kbd>+<kbd>S</kbd> Save changes</div>
+            <div><kbd>Ctrl</kbd>+<kbd>P</kbd> Toggle preview</div>
+            <div><kbd>Tab</kbd> Insert 4 spaces</div>
+            <div><kbd>Esc</kbd> Close preview</div>
+        `;
+        document.body.appendChild(shortcuts);
+        
+        setTimeout(() => shortcuts.classList.add('show'), 100);
+        setTimeout(() => {
+            shortcuts.classList.remove('show');
+            setTimeout(() => shortcuts.remove(), 300);
+        }, 8000);
+    }, 1000);
+
+    // 检测未保存的更改
+    document.getElementById('content').addEventListener('input', function() {
+        const form = document.getElementById('edit-form');
+        if (this.value !== originalContent) {
+            form.classList.add('unsaved-changes');
+        } else {
+            form.classList.remove('unsaved-changes');
+        }
+    });
+</script>
+
+{% include "modern_footer_enhanced.html" %}

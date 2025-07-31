@@ -1,0 +1,158 @@
+{% include "modern_header_enhanced.html" %}
+
+<div class="card">
+    <div class="card-header">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="card-title gradient-text">All Pastes</h1>
+                <p class="card-description">Browse and manage all public pastes</p>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="text-sm text-secondary">
+                    <span class="font-semibold">{{ pastas|length }}</span> pastes total
+                </div>
+                <a href="/" class="btn btn-primary">
+                    New Paste
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-6">
+    <div class="flex flex-col md:flex-row gap-4">
+        <div class="flex-1">
+            <input 
+                type="text" 
+                id="search-input" 
+                class="form-input" 
+                placeholder="Search pastes..."
+                onkeyup="filterPastas()"
+            >
+        </div>
+    </div>
+</div>
+
+<div id="pasta-list" class="space-y-4">
+    {% for pasta in pastas %}
+    <div class="pasta-item card hover-lift">
+        <div class="flex items-start gap-4">
+            <div class="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center text-white text-xl">
+                {% if pasta.pasta_type == "url" %}
+                <div class="bg-blue-500 w-full h-full rounded-xl flex items-center justify-center">
+                    🔗
+                </div>
+                {% elif pasta.file.is_some() %}
+                <div class="bg-green-500 w-full h-full rounded-xl flex items-center justify-center">
+                    📎
+                </div>
+                {% else %}
+                <div class="bg-purple-500 w-full h-full rounded-xl flex items-center justify-center">
+                    📝
+                </div>
+                {%- endif %}
+            </div>
+            
+            <div class="flex-1 min-w-0">
+                <div class="flex items-start justify-between gap-4">
+                    <div class="min-w-0 flex-1">
+                        <h3 class="font-semibold text-lg mb-1">
+                            <a href="/{{pasta.get_path()}}" class="text-primary hover:text-primary-hover transition-colors">
+                                {% if pasta.custom_path.is_some() %}
+                                {{ pasta.custom_path.as_ref().unwrap() }}
+                                {% elif pasta.file.is_some() %}
+                                {{ pasta.file.as_ref().unwrap().name }}
+                                {% else %}
+                                {{ pasta.id_as_animals() }}
+                                {%- endif %}
+                            </a>
+                        </h3>
+                        
+                        {% if pasta.pasta_type == "url" %}
+                        <p class="text-secondary text-sm mb-2 break-all">
+                            🔗 {{ pasta.content }}
+                        </p>
+                        {% elif pasta.file.is_some() %}
+                        <p class="text-secondary text-sm mb-2">
+                            📎 {{ pasta.file.as_ref().unwrap().name }} ({{ pasta.file.as_ref().unwrap().size }} bytes)
+                        </p>
+                        {% elif pasta.content != "" %}
+                        <p class="text-secondary text-sm mb-2">
+                            {{ pasta.content|truncate(length=150) }}
+                        </p>
+                        {%- endif %}
+                        
+                        <div class="flex items-center gap-4 text-xs text-tertiary">
+                            <span>{{ pasta.created_as_string() }}</span>
+                            
+                            {% if pasta.expiration != 0 %}
+                            <span>Expires {{ pasta.expiration_as_string() }}</span>
+                            {%- endif %}
+                            
+                            {% if pasta.burn_after_reads != 0 %}
+                            <span>🔥 {{ pasta.burn_after_reads }} reads</span>
+                            {%- endif %}
+                            
+                            {% if pasta.extension != "" %}
+                            <span class="px-2 py-1 bg-primary-100 text-primary-800 rounded-md font-medium">
+                                {{ pasta.extension }}
+                            </span>
+                            {%- endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                        <button class="copy-button btn btn-outline btn-sm" data-url="/{{pasta.get_path()}}">
+                            Copy
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div id="empty-state" class="card text-center py-12" style="display: none;">
+    <div class="text-6xl mb-4">📝</div>
+    <h3 class="text-xl font-semibold mb-2">No pastes found</h3>
+    <p class="text-secondary mb-6">Try adjusting your search or create a new paste</p>
+    <a href="/" class="btn btn-primary">Create Your First Paste</a>
+</div>
+
+<script>
+    const copyURLBtns = document.querySelectorAll('.copy-button');
+    for (let i = 0; i < copyURLBtns.length; i++) {
+        copyURLBtns.item(i).addEventListener("click", event => {
+            const element = event.currentTarget;
+            const url = window.location.origin + element.getAttribute("data-url");
+            copyToClipboard(url, element);
+        });
+    }
+
+    function filterPastas() {
+        const searchTerm = document.getElementById('search-input').value.toLowerCase();
+        const pastaItems = document.querySelectorAll('.pasta-item');
+        let visibleCount = 0;
+
+        pastaItems.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            
+            if (!searchTerm || text.includes(searchTerm)) {
+                item.style.display = 'block';
+                visibleCount++;
+            } else {
+                item.style.display = 'none';
+            }
+        });
+
+        const emptyState = document.getElementById('empty-state');
+        if (visibleCount === 0) {
+            emptyState.style.display = 'block';
+        } else {
+            emptyState.style.display = 'none';
+        }
+    }
+</script>
+
+{% include "modern_footer_enhanced.html" %}

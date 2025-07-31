@@ -1,0 +1,416 @@
+    </main>
+    
+    <!-- 页脚 -->
+    {% if !args.hide_footer %}
+    <footer class="page-footer">
+        <div class="footer-content">
+            {% if args.footer_text.as_ref().is_some() %}
+            <p class="footer-text">
+                {{ args.footer_text.as_ref().unwrap() }}
+            </p>
+            {%- endif %}
+            
+            <p class="footer-text">
+                <span data-i18n="powered_by">由</span>
+                <a href="https://microbin.eu" style="color: var(--primary-500); text-decoration: none; font-weight: var(--font-weight-medium);">
+                    MicroBin
+                </a>
+                <span data-i18n="powered_by_suffix">提供支持</span>
+            </p>
+        </div>
+    </footer>
+    {%- endif %}
+
+    <!-- JavaScript -->
+    <script>
+        // 国际化数据
+        const i18nData = {
+            zh: {
+                home: '首页',
+                list: '列表',
+                guide: '指南',
+                dark_mode: '深色',
+                light_mode: '浅色',
+                powered_by: '由',
+                powered_by_suffix: '提供支持',
+                title: '剪切板',
+                subtitle: '快速分享文本和文件',
+                content_label: '内容',
+                content_placeholder: '在这里输入内容...',
+                file_upload: '拖拽文件到这里或点击选择',
+                settings: '设置',
+                expiration: '过期时间',
+                expire_after: '过期时间',
+                '1min': '1分钟',
+                '10min': '10分钟',
+                '1hour': '1小时',
+                '24hour': '24小时',
+                '3days': '3天',
+                '1week': '1周',
+                never: '永不过期',
+                burn_after: '阅读后销毁',
+                no_limit: '无限制',
+                burn_after_reads: '销毁条件',
+                first_read: '首次阅读',
+                '10th_read': '第10次阅读',
+                '100th_read': '第100次阅读',
+                '1000th_read': '第1000次阅读',
+                '10000th_read': '第10000次阅读',
+                syntax: '语法高亮',
+                none: '无',
+                client_rendered: '客户端渲染',
+                automatic: '自动检测',
+                server_rendered: '服务端渲染',
+                privacy: '隐私设置',
+                unencrypted_no_password: '未加密（无密码）',
+                public: '公开',
+                unencrypted_protected: '未加密（受保护）',
+                readonly: '只读',
+                encrypted: '加密',
+                secret: '加密',
+                password: '密码',
+                password_placeholder: '输入密码',
+                custom_path: '自定义路径',
+                custom_path_placeholder: 'my-paste',
+                save: '保存',
+                selected_file: '已选择',
+                file_size_bytes: '字节'
+            },
+            en: {
+                home: 'Home',
+                list: 'List',
+                guide: 'Guide',
+                dark_mode: 'Dark',
+                light_mode: 'Light',
+                powered_by: 'Powered by',
+                powered_by_suffix: '',
+                title: 'Clipboard',
+                subtitle: 'Share text and files quickly',
+                content_label: 'Content',
+                content_placeholder: 'Type something here...',
+                file_upload: 'Drag files here or click to select',
+                settings: 'Settings',
+                expiration: 'Expiration',
+                expire_after: 'Expire after',
+                '1min': '1 minute',
+                '10min': '10 minutes',
+                '1hour': '1 hour',
+                '24hour': '24 hours',
+                '3days': '3 days',
+                '1week': '1 week',
+                never: 'Never Expire',
+                burn_after: 'Burn After Reading',
+                no_limit: 'No Limit',
+                burn_after_reads: 'Burn after',
+                first_read: 'First Read',
+                '10th_read': '10th Read',
+                '100th_read': '100th Read',
+                '1000th_read': '1000th Read',
+                '10000th_read': '10000th Read',
+                syntax: 'Syntax Highlighting',
+                none: 'None',
+                client_rendered: 'Client-Rendered',
+                automatic: 'Automatic',
+                server_rendered: 'Server-Rendered',
+                privacy: 'Privacy',
+                unencrypted_no_password: 'Unencrypted (no password)',
+                public: 'Public',
+                unencrypted_protected: 'Unencrypted (protected)',
+                readonly: 'Read-only',
+                encrypted: 'Encrypted',
+                secret: 'Secret',
+                password: 'Password',
+                password_placeholder: 'Enter password',
+                custom_path: 'Custom Path',
+                custom_path_placeholder: 'my-paste',
+                save: 'Save',
+                selected_file: 'Selected',
+                file_size_bytes: 'bytes'
+            }
+        };
+
+        // 主题切换功能
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeButton(newTheme);
+        }
+
+        function updateThemeButton(theme) {
+            const lightIcon = document.getElementById('theme-icon-light');
+            const darkIcon = document.getElementById('theme-icon-dark');
+            const themeText = document.getElementById('theme-text');
+            
+            if (lightIcon && darkIcon && themeText) {
+                if (theme === 'dark') {
+                    lightIcon.style.display = 'block';
+                    darkIcon.style.display = 'none';
+                    const lang = localStorage.getItem('language') || 'zh';
+                    themeText.textContent = i18nData[lang].light_mode;
+                } else {
+                    lightIcon.style.display = 'none';
+                    darkIcon.style.display = 'block';
+                    const lang = localStorage.getItem('language') || 'zh';
+                    themeText.textContent = i18nData[lang].dark_mode;
+                }
+            }
+        }
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            const theme = savedTheme || systemTheme;
+            document.documentElement.setAttribute('data-theme', theme);
+            updateThemeButton(theme);
+        }
+
+        // 监听系统主题变化
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+            if (!localStorage.getItem('theme')) {
+                const theme = e.matches ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-theme', theme);
+                updateThemeButton(theme);
+            }
+        });
+
+        // 国际化功能
+        function initI18n() {
+            const languageSelect = document.getElementById('language-select');
+            if (!languageSelect) return;
+            
+            // 检测浏览器语言
+            const browserLang = navigator.language || navigator.userLanguage;
+            const defaultLang = browserLang.startsWith('zh') ? 'zh' : 'en';
+            
+            // 从localStorage获取保存的语言设置
+            const savedLang = localStorage.getItem('language') || defaultLang;
+            languageSelect.value = savedLang;
+            
+            // 应用语言
+            applyLanguage(savedLang);
+            
+            // 监听语言切换
+            languageSelect.addEventListener('change', function() {
+                const selectedLang = this.value;
+                localStorage.setItem('language', selectedLang);
+                applyLanguage(selectedLang);
+                updateThemeButton(document.documentElement.getAttribute('data-theme'));
+            });
+        }
+
+        function applyLanguage(lang) {
+            const data = i18nData[lang] || i18nData.en;
+            
+            // 更新所有带有data-i18n属性的元素
+            document.querySelectorAll('[data-i18n]').forEach(element => {
+                const key = element.getAttribute('data-i18n');
+                if (data[key]) {
+                    element.textContent = data[key];
+                }
+            });
+            
+            // 更新placeholder
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
+                const key = element.getAttribute('data-i18n-placeholder');
+                if (data[key]) {
+                    element.placeholder = data[key];
+                }
+            });
+            
+            // 更新optgroup标签
+            document.querySelectorAll('optgroup[data-i18n]').forEach(element => {
+                const key = element.getAttribute('data-i18n');
+                if (data[key]) {
+                    element.label = data[key];
+                }
+            });
+        }
+
+        // 现代UI交互功能
+        function initModernUI() {
+            // 设置面板切换
+            const settingsToggle = document.getElementById('settings-toggle');
+            const settingsContent = document.getElementById('settings-content');
+            
+            if (settingsToggle && settingsContent) {
+                settingsToggle.addEventListener('click', function() {
+                    settingsContent.classList.toggle('expanded');
+                });
+            }
+            
+            // 隐私设置变化时显示/隐藏密码字段
+            const privacySelect = document.getElementById('privacy');
+            const passwordGroup = document.getElementById('password-group');
+            
+            if (privacySelect && passwordGroup) {
+                privacySelect.addEventListener('change', function() {
+                    const value = this.value;
+                    if (value === 'readonly' || value === 'secret') {
+                        passwordGroup.style.display = 'block';
+                    } else {
+                        passwordGroup.style.display = 'none';
+                    }
+                });
+            }
+            
+            // 文件上传拖拽功能
+            const fileUploadArea = document.getElementById('file-upload-area');
+            const fileInput = document.getElementById('file');
+            
+            if (fileUploadArea && fileInput) {
+                fileUploadArea.addEventListener('click', () => fileInput.click());
+                
+                fileUploadArea.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    this.classList.add('dragover');
+                });
+                
+                fileUploadArea.addEventListener('dragleave', function(e) {
+                    e.preventDefault();
+                    this.classList.remove('dragover');
+                });
+                
+                fileUploadArea.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    this.classList.remove('dragover');
+                    
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                        fileInput.files = files;
+                        updateFileUploadDisplay(files[0]);
+                    }
+                });
+                
+                fileInput.addEventListener('change', function() {
+                    if (this.files.length > 0) {
+                        updateFileUploadDisplay(this.files[0]);
+                    }
+                });
+            }
+            
+            // Textarea自动调整高度
+            const textarea = document.getElementById('content-input');
+            if (textarea) {
+                textarea.addEventListener('input', function() {
+                    adjustTextareaHeight(this);
+                });
+                
+                // 初始调整
+                adjustTextareaHeight(textarea);
+            }
+        }
+
+        function updateFileUploadDisplay(file) {
+            const fileUploadText = document.querySelector('.file-upload-text');
+            if (fileUploadText) {
+                const lang = localStorage.getItem('language') || 'zh';
+                const data = i18nData[lang];
+                const text = `${data.selected_file}: ${file.name} (${formatFileSize(file.size)})`;
+                fileUploadText.textContent = text;
+            }
+        }
+        
+        function adjustTextareaHeight(textarea) {
+            textarea.style.height = 'auto';
+            const newHeight = Math.min(Math.max(textarea.scrollHeight, 120), 400);
+            textarea.style.height = newHeight + 'px';
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // 自定义路径自动填入功能
+        function initCustomPath() {
+            const customPathInput = document.getElementById('custom_path');
+            if (customPathInput && customPathInput.value === '') {
+                // 从URL路径中提取可能的自定义路径
+                const path = window.location.pathname;
+                const pathSegments = path.split('/').filter(segment => segment !== '');
+                
+                // 如果URL包含路径段且不是系统路径，则自动填入
+                if (pathSegments.length > 0) {
+                    const lastSegment = pathSegments[pathSegments.length - 1];
+                    const systemPaths = ['list', 'guide', 'upload', 'edit', 'remove', 'qr', 'raw', 'file', 'url'];
+                    
+                    if (!systemPaths.includes(lastSegment) && /^[a-zA-Z0-9\-_]+$/.test(lastSegment)) {
+                        customPathInput.value = lastSegment;
+                        customPathInput.focus();
+                        customPathInput.select();
+                    }
+                }
+            }
+        }
+
+        // 复制到剪切板功能
+        function copyToClipboard(text, button) {
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showCopySuccess(button);
+                }).catch(() => {
+                    fallbackCopyToClipboard(text, button);
+                });
+            } else {
+                fallbackCopyToClipboard(text, button);
+            }
+        }
+
+        function fallbackCopyToClipboard(text, button) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            textArea.style.top = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                showCopySuccess(button);
+            } catch (err) {
+                console.error('复制失败:', err);
+            }
+            
+            document.body.removeChild(textArea);
+        }
+
+        function showCopySuccess(button) {
+            const originalText = button.textContent;
+            const lang = localStorage.getItem('language') || 'zh';
+            button.textContent = lang === 'zh' ? '已复制!' : 'Copied!';
+            button.style.background = 'var(--success-500)';
+            
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.style.background = '';
+            }, 2000);
+        }
+
+        // 键盘快捷键支持
+        document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + Enter: 提交表单
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                const submitButton = document.getElementById('submit-button');
+                if (submitButton) {
+                    submitButton.click();
+                }
+            }
+        });
+
+        // 初始化所有功能
+        document.addEventListener('DOMContentLoaded', function() {
+            initTheme();
+            initI18n();
+            initModernUI();
+            initCustomPath();
+        });
+    </script>
+</body>
+</html>

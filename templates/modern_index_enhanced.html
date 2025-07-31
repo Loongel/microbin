@@ -1,0 +1,321 @@
+{% include "modern_header_enhanced.html" %}
+
+<!-- 自定义路径提示 -->
+{% if custom_path.is_some() %}
+<div class="alert alert-info">
+    <div class="flex items-center gap-3">
+        <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+        </svg>
+        <div>
+            <h3 class="font-semibold text-base mb-1">Creating Custom Path Paste</h3>
+            <p class="text-sm mb-0">
+                You are creating new paste content for path <strong>/{{ custom_path.as_ref().unwrap() }}</strong>.
+                After saving, you can access your content through this custom path.
+            </p>
+        </div>
+    </div>
+</div>
+{%- endif %}
+
+<!-- 状态消息 -->
+{% if status != "" %}
+<div class="alert alert-info">
+    <div class="flex items-center gap-3">
+        <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+        </svg>
+        <span>{{ status }}</span>
+    </div>
+</div>
+{%- endif %}
+
+<!-- 主要创建表单 -->
+<div class="card">
+    <div class="card-header">
+        <h1 class="card-title gradient-text">Create New Paste</h1>
+        <p class="card-description">Share text, code, or files quickly and securely with modern encryption and privacy controls</p>
+    </div>
+
+    <form id="pasta-form" action="upload" method="POST" enctype="multipart/form-data" class="form">
+        <!-- 主要内容区域 -->
+        <div class="form-group">
+            <label for="content" class="form-label">
+                Content
+                <span class="text-tertiary text-sm font-normal">Paste your text, code, or any content here</span>
+            </label>
+            <textarea 
+                name="content" 
+                id="content" 
+                class="form-textarea" 
+                placeholder="Paste your text here... 
+
+You can also:
+• Drag and drop files
+• Use Ctrl+V to paste
+• Write code with syntax highlighting
+• Add custom URLs for easy sharing"
+                rows="8"
+                spellcheck="false"
+            ></textarea>
+        </div>
+
+        <!-- 自定义路径 -->
+        <div class="form-group">
+            <label for="custom_path" class="form-label">
+                Custom Path
+                <span class="text-tertiary text-sm font-normal">(Optional) Create a memorable URL</span>
+            </label>
+            <div class="flex items-center gap-2">
+                <span class="text-secondary text-sm">{{ args.public_path_as_str() }}/</span>
+                <input 
+                    type="text" 
+                    name="custom_path" 
+                    id="custom_path" 
+                    class="form-input" 
+                    placeholder="my-awesome-paste"
+                    pattern="[a-zA-Z0-9\-_]+"
+                    title="Only letters, numbers, hyphens, and underscores allowed"
+                >
+            </div>
+            <div class="text-xs text-tertiary mt-1">
+                Leave empty for auto-generated path. Only letters, numbers, hyphens, and underscores allowed.
+            </div>
+        </div>
+
+        <!-- 设置网格 -->
+        <div class="settings-grid">
+            <!-- 过期时间 -->
+            <div class="form-group">
+                <label for="expiration" class="form-label">
+                    Expiration
+                    <a href="/guide#expiration" class="form-help" data-tooltip="Learn about expiration options">?</a>
+                </label>
+                <select name="expiration" id="expiration" class="form-select">
+                    <optgroup label="Expire after">
+                        {% if args.default_expiry == "1min" %}
+                        <option selected value="1min">1 minute</option>
+                        {%- else %}
+                        <option value="1min">1 minute</option>
+                        {%- endif %}
+                        
+                        {% if args.default_expiry == "10min" %}
+                        <option selected value="10min">10 minutes</option>
+                        {%- else %}
+                        <option value="10min">10 minutes</option>
+                        {%- endif %}
+                        
+                        {% if args.default_expiry == "1hour" %}
+                        <option selected value="1hour">1 hour</option>
+                        {%- else %}
+                        <option value="1hour">1 hour</option>
+                        {%- endif %}
+                        
+                        {% if args.default_expiry == "24hour" %}
+                        <option selected value="24hour">24 hours</option>
+                        {%- else %}
+                        <option value="24hour">24 hours</option>
+                        {%- endif %}
+                        
+                        {% if args.default_expiry == "3days" %}
+                        <option selected value="3days">3 days</option>
+                        {%- else %}
+                        <option value="3days">3 days</option>
+                        {%- endif %}
+                        
+                        {% if args.default_expiry == "1week" %}
+                        <option selected value="1week">1 week</option>
+                        {%- else %}
+                        <option value="1week">1 week</option>
+                        {%- endif %}
+                    </optgroup>
+                    
+                    {% if args.eternal_pasta %}
+                    {% if args.default_expiry == "never" %}
+                    <option selected value="never">Never Expire</option>
+                    {%- else %}
+                    <option value="never">Never Expire</option>
+                    {%- endif %}
+                    {%- endif %}
+                </select>
+            </div>
+
+            <!-- 隐私设置 -->
+            <div class="form-group">
+                <label for="privacy" class="form-label">
+                    Privacy
+                    <a href="/guide#privacy" class="form-help" data-tooltip="Learn about privacy options">?</a>
+                </label>
+                <select name="privacy" id="privacy" class="form-select">
+                    <option value="public">🌍 Public - Visible to everyone</option>
+                    {% if args.enable_readonly %}
+                    <option value="private">🔒 Private - Password protected</option>
+                    <option value="unlisted">👁️ Unlisted - Hidden from lists</option>
+                    {%- endif %}
+                </select>
+            </div>
+
+            <!-- 语法高亮 -->
+            <div class="form-group">
+                <label for="syntax_highlight" class="form-label">
+                    Syntax Highlighting
+                    <a href="/guide#syntax-highlighting" class="form-help" data-tooltip="Choose language for code highlighting">?</a>
+                </label>
+                <select name="syntax_highlight" id="syntax_highlight" class="form-select">
+                    <option value="none">None</option>
+                    <optgroup label="Popular Languages">
+                        <option value="javascript">JavaScript</option>
+                        <option value="python">Python</option>
+                        <option value="rust">Rust</option>
+                        <option value="html">HTML</option>
+                        <option value="css">CSS</option>
+                        <option value="json">JSON</option>
+                    </optgroup>
+                    <optgroup label="Other Languages">
+                        <option value="xml">XML</option>
+                        <option value="sql">SQL</option>
+                        <option value="bash">Bash</option>
+                        <option value="c">C</option>
+                        <option value="cpp">C++</option>
+                        <option value="java">Java</option>
+                        <option value="php">PHP</option>
+                        <option value="go">Go</option>
+                        <option value="typescript">TypeScript</option>
+                    </optgroup>
+                </select>
+            </div>
+
+            <!-- 阅读后销毁 -->
+            {% if args.enable_burn_after %}
+            <div class="form-group">
+                <label for="burn_after" class="form-label">
+                    Burn After Reading
+                    <a href="/guide#burn-after-reading" class="form-help" data-tooltip="Auto-delete after specified reads">?</a>
+                </label>
+                <select name="burn_after" id="burn_after" class="form-select">
+                    {% if args.default_burn_after == 0 %}
+                    <option selected value="0">♾️ Never</option>
+                    {%- else %}
+                    <option value="0">♾️ Never</option>
+                    {%- endif %}
+                    
+                    {% if args.default_burn_after == 1 %}
+                    <option selected value="1">🔥 1 read</option>
+                    {%- else %}
+                    <option value="1">🔥 1 read</option>
+                    {%- endif %}
+                    
+                    {% if args.default_burn_after == 10 %}
+                    <option selected value="10">🔥 10 reads</option>
+                    {%- else %}
+                    <option value="10">🔥 10 reads</option>
+                    {%- endif %}
+                    
+                    {% if args.default_burn_after == 100 %}
+                    <option selected value="100">🔥 100 reads</option>
+                    {%- else %}
+                    <option value="100">🔥 100 reads</option>
+                    {%- endif %}
+                </select>
+            </div>
+            {%- endif %}
+        </div>
+
+        <!-- 加密选项 -->
+        {% if args.encryption_server_side || args.encryption_client_side %}
+        <div class="form-group">
+            <h3 class="text-lg font-semibold text-primary mb-4 flex items-center gap-2">
+                <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path>
+                </svg>
+                Encryption Options
+            </h3>
+            
+            <div class="grid grid-cols-1 gap-4">
+                {% if args.encryption_server_side %}
+                <label class="flex items-center gap-3 p-3 border border-primary rounded-lg cursor-pointer hover:bg-primary-light transition-colors">
+                    <input type="checkbox" name="encrypt_server" value="on" class="w-4 h-4">
+                    <div>
+                        <div class="font-medium">Server-side encryption</div>
+                        <div class="text-sm text-secondary">Encrypt content on the server with your password</div>
+                    </div>
+                </label>
+                {%- endif %}
+                
+                {% if args.encryption_client_side %}
+                <label class="flex items-center gap-3 p-3 border border-primary rounded-lg cursor-pointer hover:bg-primary-light transition-colors">
+                    <input type="checkbox" name="encrypt_client" value="on" class="w-4 h-4">
+                    <div>
+                        <div class="font-medium">Client-side encryption</div>
+                        <div class="text-sm text-secondary">Encrypt content in your browser before sending</div>
+                    </div>
+                </label>
+                {%- endif %}
+            </div>
+            
+            <div class="mt-4">
+                <label for="password" class="form-label">
+                    Password
+                    <span class="text-tertiary text-sm font-normal">(Required for encryption)</span>
+                </label>
+                <input 
+                    type="password" 
+                    name="password" 
+                    id="password" 
+                    class="form-input" 
+                    placeholder="Enter a strong password for encryption"
+                    autocomplete="new-password"
+                >
+            </div>
+        </div>
+        {%- endif %}
+
+        <!-- 文件上传 -->
+        {% if !args.no_file_upload %}
+        <div class="file-upload">
+            <label for="file" class="form-label">
+                Attach File
+                <span class="text-tertiary text-sm font-normal">(Optional) Drag & drop or click to select</span>
+            </label>
+            <label for="file" class="file-upload-area">
+                <div class="file-upload-content">
+                    <svg class="file-upload-icon" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                    </svg>
+                    <div class="file-upload-text">Click to select file or drag and drop</div>
+                    <div class="file-upload-subtext">Any file type supported • Max size depends on server settings</div>
+                </div>
+            </label>
+            <input type="file" name="file" id="file" class="file-input">
+        </div>
+        {%- endif %}
+
+        <!-- 提交按钮 -->
+        <div class="action-buttons action-buttons-center mt-8">
+            <input type="submit" value="🚀 Create Paste" class="btn btn-primary btn-lg">
+        </div>
+    </form>
+</div>
+
+<!-- 功能介绍卡片 -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+    <div class="card text-center">
+        <div class="text-4xl mb-4">🔒</div>
+        <h3 class="text-lg font-semibold mb-2">Secure & Private</h3>
+        <p class="text-secondary text-sm">End-to-end encryption, password protection, and automatic expiration keep your data safe.</p>
+    </div>
+    
+    <div class="card text-center">
+        <div class="text-4xl mb-4">⚡</div>
+        <h3 class="text-lg font-semibold mb-2">Lightning Fast</h3>
+        <p class="text-secondary text-sm">Modern interface with instant loading, drag & drop uploads, and keyboard shortcuts.</p>
+    </div>
+    
+    <div class="card text-center">
+        <div class="text-4xl mb-4">🎨</div>
+        <h3 class="text-lg font-semibold mb-2">Developer Friendly</h3>
+        <p class="text-secondary text-sm">Syntax highlighting for 15+ languages, custom URLs, and API access for automation.</p>
+    </div>
+</div>
+
+{% include "modern_footer_enhanced.html" %}

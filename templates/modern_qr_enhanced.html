@@ -1,0 +1,400 @@
+{% include "modern_header_enhanced.html" %}
+
+<!-- QR码展示卡片 -->
+<div class="card text-center">
+    <div class="card-header">
+        <h1 class="card-title gradient-text">QR Code</h1>
+        <p class="card-description">Scan with your mobile device to quickly access this paste</p>
+    </div>
+
+    <!-- QR码容器 -->
+    <div class="mb-8">
+        <div class="inline-block p-6 bg-white rounded-2xl shadow-lg border-2 border-gray-100">
+            <a href="/upload/{{ pasta.id_as_animals() }}" class="block hover:scale-105 transition-transform duration-300">
+                {{ qr|safe }}
+            </a>
+        </div>
+    </div>
+
+    <!-- URL信息 -->
+    <div class="mb-6">
+        <div class="p-4 bg-primary-light rounded-xl border border-primary-200">
+            <div class="flex items-center justify-center gap-3 mb-2">
+                <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20" class="text-primary-600">
+                    <path d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5z"></path>
+                    <path d="M7.414 15.414a2 2 0 01-2.828-2.828l3-3a2 2 0 012.828 0 1 1 0 001.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5z"></path>
+                </svg>
+                <h3 class="font-semibold text-primary-800">Paste URL</h3>
+            </div>
+            <p class="text-primary-700 font-mono text-sm break-all" id="paste-url">
+                <!-- URL will be populated by JavaScript -->
+            </p>
+        </div>
+    </div>
+
+    <!-- 操作按钮 -->
+    <div class="action-buttons action-buttons-center mb-8">
+        <button id="copy-url-button" class="btn btn-primary" onclick="copyPasteUrl()">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"></path>
+                <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"></path>
+            </svg>
+            Copy URL
+        </button>
+        
+        <button id="download-qr-button" class="btn btn-outline" onclick="downloadQR()">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+            </svg>
+            Download QR
+        </button>
+        
+        <a href="/upload/{{ pasta.id_as_animals() }}" class="btn btn-secondary">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"></path>
+            </svg>
+            Back to Paste
+        </a>
+    </div>
+
+    <!-- 使用说明 -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="text-center">
+            <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+                <svg width="24" height="24" fill="currentColor" viewBox="0 0 20 20" class="text-blue-600">
+                    <path d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"></path>
+                </svg>
+            </div>
+            <h4 class="font-semibold mb-2">1. Open Camera</h4>
+            <p class="text-sm text-secondary">Open your phone's camera app or QR scanner</p>
+        </div>
+        
+        <div class="text-center">
+            <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+                <svg width="24" height="24" fill="currentColor" viewBox="0 0 20 20" class="text-green-600">
+                    <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+                </svg>
+            </div>
+            <h4 class="font-semibold mb-2">2. Scan Code</h4>
+            <p class="text-sm text-secondary">Point your camera at the QR code above</p>
+        </div>
+        
+        <div class="text-center">
+            <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+                <svg width="24" height="24" fill="currentColor" viewBox="0 0 20 20" class="text-purple-600">
+                    <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                </svg>
+            </div>
+            <h4 class="font-semibold mb-2">3. Access Paste</h4>
+            <p class="text-sm text-secondary">Tap the notification to open the paste</p>
+        </div>
+    </div>
+</div>
+
+<!-- 额外信息卡片 -->
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">About This QR Code</h2>
+        <p class="card-description">Technical details and sharing options</p>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+            <h3 class="font-semibold mb-3 flex items-center gap-2">
+                <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                </svg>
+                QR Code Information
+            </h3>
+            <ul class="space-y-2 text-sm text-secondary">
+                <li class="flex items-center gap-2">
+                    <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                    High error correction level
+                </li>
+                <li class="flex items-center gap-2">
+                    <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
+                    Compatible with all QR scanners
+                </li>
+                <li class="flex items-center gap-2">
+                    <span class="w-2 h-2 bg-purple-500 rounded-full"></span>
+                    Optimized for mobile devices
+                </li>
+                <li class="flex items-center gap-2">
+                    <span class="w-2 h-2 bg-orange-500 rounded-full"></span>
+                    Vector format for crisp display
+                </li>
+            </ul>
+        </div>
+        
+        <div>
+            <h3 class="font-semibold mb-3 flex items-center gap-2">
+                <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z"></path>
+                </svg>
+                Sharing Options
+            </h3>
+            <div class="space-y-3">
+                <button class="w-full btn btn-outline btn-sm" onclick="shareQR()">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z"></path>
+                    </svg>
+                    Share QR Code
+                </button>
+                <button class="w-full btn btn-outline btn-sm" onclick="printQR()">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v3a2 2 0 002 2h1v2a2 2 0 002 2h6a2 2 0 002-2v-2h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm8 0H7v3h6V4zm0 8H7v4h6v-4z" clip-rule="evenodd"></path>
+                    </svg>
+                    Print QR Code
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 脚本 -->
+<script>
+    // 动态获取并显示URL
+    document.addEventListener('DOMContentLoaded', function() {
+        const baseUrl = getBaseUrl();
+        const pasteUrl = `${baseUrl}/{{ pasta.get_path() }}`;
+        document.getElementById('paste-url').textContent = pasteUrl;
+        
+        // 添加QR码悬停效果
+        const qrContainer = document.querySelector('.card .inline-block');
+        if (qrContainer) {
+            qrContainer.addEventListener('mouseenter', function() {
+                this.classList.add('animate-pulse');
+            });
+            qrContainer.addEventListener('mouseleave', function() {
+                this.classList.remove('animate-pulse');
+            });
+        }
+    });
+
+    // 复制URL功能
+    function copyPasteUrl() {
+        const baseUrl = getBaseUrl();
+        const pasteUrl = `${baseUrl}/{{ pasta.get_path() }}`;
+        const button = document.getElementById('copy-url-button');
+        copyToClipboard(pasteUrl, button);
+    }
+
+    // 下载QR码功能
+    function downloadQR() {
+        const svg = document.querySelector('svg');
+        if (!svg) return;
+
+        // 创建canvas来转换SVG为PNG
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const data = new XMLSerializer().serializeToString(svg);
+        const DOMURL = window.URL || window.webkitURL || window;
+
+        const img = new Image();
+        const svgBlob = new Blob([data], {type: 'image/svg+xml;charset=utf-8'});
+        const url = DOMURL.createObjectURL(svgBlob);
+
+        img.onload = function() {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+            DOMURL.revokeObjectURL(url);
+
+            // 下载图片
+            const imgURI = canvas.toDataURL('image/png').replace('image/png', 'image/octet-stream');
+            const evt = new MouseEvent('click', {
+                view: window,
+                bubbles: false,
+                cancelable: true
+            });
+
+            const a = document.createElement('a');
+            a.setAttribute('download', 'microbin-qr-code.png');
+            a.setAttribute('href', imgURI);
+            a.setAttribute('target', '_blank');
+            a.dispatchEvent(evt);
+        };
+
+        img.src = url;
+    }
+
+    // 分享QR码功能
+    function shareQR() {
+        if (navigator.share) {
+            const baseUrl = getBaseUrl();
+            const pasteUrl = `${baseUrl}/{{ pasta.get_path() }}`;
+            
+            navigator.share({
+                title: 'MicroBin Paste',
+                text: 'Check out this paste on MicroBin',
+                url: pasteUrl
+            }).catch(err => console.log('Error sharing:', err));
+        } else {
+            // 降级方案：复制URL
+            copyPasteUrl();
+        }
+    }
+
+    // 打印QR码功能
+    function printQR() {
+        const printWindow = window.open('', '_blank');
+        const qrSvg = document.querySelector('svg').outerHTML;
+        const baseUrl = getBaseUrl();
+        const pasteUrl = `${baseUrl}/{{ pasta.get_path() }}`;
+        
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>MicroBin QR Code</title>
+                <style>
+                    body {
+                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                        text-align: center;
+                        padding: 2rem;
+                        max-width: 600px;
+                        margin: 0 auto;
+                    }
+                    .qr-container {
+                        margin: 2rem 0;
+                        padding: 2rem;
+                        border: 2px solid #e5e7eb;
+                        border-radius: 1rem;
+                        display: inline-block;
+                    }
+                    .url {
+                        font-family: monospace;
+                        background: #f3f4f6;
+                        padding: 1rem;
+                        border-radius: 0.5rem;
+                        word-break: break-all;
+                        margin: 1rem 0;
+                    }
+                    @media print {
+                        body { padding: 1rem; }
+                    }
+                </style>
+            </head>
+            <body>
+                <h1>MicroBin QR Code</h1>
+                <div class="qr-container">
+                    ${qrSvg}
+                </div>
+                <div class="url">${pasteUrl}</div>
+                <p>Scan this QR code to access the paste on your mobile device</p>
+                <script>
+                    window.onload = function() {
+                        window.print();
+                        window.onafterprint = function() {
+                            window.close();
+                        };
+                    };
+                </script>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+    }
+
+    // 键盘快捷键
+    document.addEventListener('keydown', function(e) {
+        // C: 复制URL
+        if (e.key === 'c' || e.key === 'C') {
+            if (!e.ctrlKey && !e.metaKey) {
+                e.preventDefault();
+                copyPasteUrl();
+            }
+        }
+        
+        // D: 下载QR码
+        if (e.key === 'd' || e.key === 'D') {
+            if (!e.ctrlKey && !e.metaKey) {
+                e.preventDefault();
+                downloadQR();
+            }
+        }
+        
+        // P: 打印QR码
+        if (e.key === 'p' || e.key === 'P') {
+            if (!e.ctrlKey && !e.metaKey) {
+                e.preventDefault();
+                printQR();
+            }
+        }
+    });
+
+    // 添加键盘快捷键提示
+    const style = document.createElement('style');
+    style.textContent = `
+        .space-y-2 > * + * {
+            margin-top: 0.5rem;
+        }
+        
+        .space-y-3 > * + * {
+            margin-top: 0.75rem;
+        }
+        
+        @media (min-width: 768px) {
+            .md\\:grid-cols-2 {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+            .md\\:grid-cols-3 {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+        
+        /* 键盘快捷键提示 */
+        .keyboard-hint {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-lg);
+            padding: 1rem;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            box-shadow: var(--shadow-lg);
+            opacity: 0;
+            transform: translateY(1rem);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .keyboard-hint.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .keyboard-hint kbd {
+            background: var(--bg-code);
+            border: 1px solid var(--border-primary);
+            border-radius: 0.25rem;
+            padding: 0.125rem 0.25rem;
+            font-family: monospace;
+            font-size: 0.75rem;
+        }
+    `;
+    document.head.appendChild(style);
+
+    // 显示键盘快捷键提示
+    setTimeout(() => {
+        const hint = document.createElement('div');
+        hint.className = 'keyboard-hint';
+        hint.innerHTML = `
+            <div style="margin-bottom: 0.5rem; font-weight: 600;">Keyboard Shortcuts:</div>
+            <div><kbd>C</kbd> Copy URL</div>
+            <div><kbd>D</kbd> Download QR</div>
+            <div><kbd>P</kbd> Print QR</div>
+        `;
+        document.body.appendChild(hint);
+        
+        setTimeout(() => hint.classList.add('show'), 100);
+        setTimeout(() => {
+            hint.classList.remove('show');
+            setTimeout(() => hint.remove(), 300);
+        }, 5000);
+    }, 2000);
+</script>
+
+{% include "modern_footer_enhanced.html" %}

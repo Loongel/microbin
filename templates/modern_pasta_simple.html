@@ -1,0 +1,93 @@
+{% include "modern_header_redesigned.html" %}
+
+<div class="main-container">
+    <div class="content-area slide-up">
+        <div class="pasta-header">
+            <div class="pasta-title-section">
+                <h1 class="pasta-title">
+                    {% if pasta.custom_path.is_some() %}
+                    {{ pasta.custom_path.as_ref().unwrap() }}
+                    {% elif pasta.file.is_some() %}
+                    {{ pasta.file.as_ref().unwrap().name }}
+                    {% else %}
+                    {{ pasta.id_as_animals() }}
+                    {%- endif %}
+                </h1>
+                
+                <div class="pasta-meta">
+                    <span class="meta-item">{{ pasta.created_as_string() }}</span>
+                    
+                    {% if pasta.expiration != 0 %}
+                    <span class="meta-item">过期: {{ pasta.expiration_as_string() }}</span>
+                    {%- endif %}
+                    
+                    {% if pasta.burn_after_reads != 0 %}
+                    <span class="meta-item warning">🔥 {{ pasta.burn_after_reads }} 次阅读后销毁</span>
+                    {%- endif %}
+                    
+                    {% if pasta.extension != "" %}
+                    <span class="meta-item language-tag">{{ pasta.extension }}</span>
+                    {%- endif %}
+                </div>
+            </div>
+            
+            <div class="pasta-actions">
+                <button class="btn btn-outline btn-sm copy-button" data-url="/{{pasta.get_path()}}">复制链接</button>
+                
+                {% if args.qr %}
+                <a href="/qr/{{pasta.get_path()}}" class="btn btn-outline btn-sm">二维码</a>
+                {%- endif %}
+                
+                {% if args.editable %}
+                <a href="/edit/{{pasta.get_path()}}" class="btn btn-outline btn-sm">编辑</a>
+                {%- endif %}
+                
+                <a href="/remove/{{pasta.get_path()}}" class="btn btn-outline btn-sm btn-danger">删除</a>
+            </div>
+        </div>
+
+        <div class="pasta-content">
+            {% if pasta.pasta_type == "url" %}
+            <div class="url-content">
+                <h3>重定向URL</h3>
+                <a href="{{ pasta.content }}" target="_blank" rel="noopener noreferrer" class="url-link">
+                    {{ pasta.content }}
+                </a>
+                <div class="url-actions">
+                    <a href="{{ pasta.content }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary">访问链接</a>
+                </div>
+            </div>
+            
+            {% elif pasta.file.is_some() %}
+            <div class="file-content">
+                <h3>{{ pasta.file.as_ref().unwrap().name }}</h3>
+                <p class="file-size">{{ pasta.file.as_ref().unwrap().size }} 字节</p>
+                <div class="file-actions">
+                    <a href="/file/{{pasta.get_path()}}" class="btn btn-primary" download>下载</a>
+                </div>
+            </div>
+            
+            {% else %}
+            <div class="text-content">
+                {% if args.highlightsyntax && pasta.extension != "" %}
+                <pre><code class="language-{{ pasta.extension }}">{{ pasta.content }}</code></pre>
+                {% else %}
+                <pre class="plain-text">{{ pasta.content }}</pre>
+                {%- endif %}
+            </div>
+            {%- endif %}
+        </div>
+    </div>
+</div>
+
+{% if args.highlightsyntax %}
+<link rel="stylesheet" href="/static/highlight/highlight.min.css">
+<script src="/static/highlight/highlight.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        hljs.highlightAll();
+    });
+</script>
+{%- endif %}
+
+{% include "modern_footer_redesigned.html" %}

@@ -1,0 +1,468 @@
+{% include "header.html" %}
+
+{% if custom_path.is_some() %}
+<div style="background-color: #e8f4fd; border: 1px solid #bee5eb; border-radius: 5px; padding: 15px; margin-bottom: 20px;">
+    <h3 style="margin-top: 0; color: #0c5460;">创建自定义路径剪贴板</h3>
+    <p style="margin-bottom: 0; color: #0c5460;">
+        您正在为路径 <strong>/{{ custom_path.as_ref().unwrap() }}</strong> 创建新的剪贴板内容。
+        保存后，您可以通过此自定义路径访问您的内容。
+    </p>
+</div>
+{%- endif %}
+
+{% if status != "" %}
+<div style="background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 5px; padding: 15px; margin-bottom: 20px;">
+    <p style="margin: 0; color: #856404;">{{ status }}</p>
+</div>
+{%- endif %}
+
+<form id="pasta-form" action="upload" method="POST" enctype="multipart/form-data">
+    <br>
+    <div id="settings">
+        <div>
+            <label for="expiration">Expiration <sup> <a href="/guide#expiration">﹖</a></sup></label><br>
+            <select style="width: 100%;" name="expiration" id="expiration">
+                <optgroup label="Expire after">
+                    {% if args.default_expiry == "1min" %}
+                    <option selected value="1min">
+                        {%- else %}
+                    <option value="1min">
+                        {%- endif %} 1 minute
+                    </option>
+                    {% if args.default_expiry == "10min" %}
+                    <option selected value="10min">
+                        {%- else %}
+                    <option value="10min">
+                        {%- endif %} 10 minutes
+                    </option>
+                    {% if args.default_expiry == "1hour" %}
+                    <option selected value="1hour">
+                        {%- else %}
+                    <option value="1hour">
+                        {%- endif %} 1 hour
+                    </option>
+                    {% if args.default_expiry == "24hour" %}
+                    <option selected value="24hour">
+                        {%- else %}
+                    <option value="24hour">
+                        {%- endif %} 24 hours
+                    </option>
+                    {% if args.default_expiry == "3days" %}
+                    <option selected value="3days">
+                        {%- else %}
+                    <option value="3days">
+                        {%- endif %} 3 days
+                    </option>
+                    {% if args.default_expiry == "1week" %}
+                    <option selected value="1week">
+                        {%- else %}
+                    <option value="1week">
+                        {%- endif %} 1 week
+                    </option>
+                </optgroup>
+                {% if !args.eternal_pasta %} {% if args.default_expiry ==
+                "never" %}
+                <option selected value="never">
+                    {%- else %}
+                <option value="never">{%- endif %} Never Expire
+                </option>
+                {%- endif %}
+            </select>
+        </div>
+        {% if args.enable_burn_after %}
+        <div>
+            <label for="burn_after">Burn After <sup> <a href="/guide#burn-after">﹖</a></sup></label><br>
+            <select style="width: 100%;" name="burn_after" id="burn_after">
+                {% if args.default_burn_after == 0 %}
+                <option selected value="0">
+                    {%- else %}
+                <option value="0">
+                    {%- endif %} No Limit
+                </option>
+                <optgroup label="Burn after">
+                    {% if args.default_burn_after == 1 %}
+                    <option selected value="1">
+                        {%- else %}
+                    <option value="1">
+                        {%- endif %} First Read
+                    </option>
+                    {% if args.default_burn_after == 10 %}
+                    <option selected value="10">
+                        {%- else %}
+                    <option value="10">
+                        {%- endif %} 10th Read
+                    </option>
+                    {% if args.default_burn_after == 100 %}
+                    <option selected value="100">
+                        {%- else %}
+                    <option value="100">
+                        {%- endif %} 100th Read
+                    </option>
+                    {% if args.default_burn_after == 1000 %}
+                    <option selected value="1000">
+                        {%- else %}
+                    <option value="1000">
+                        {%- endif %} 1000th Read
+                    </option>
+                    {% if args.default_burn_after == 10000 %}
+                    <option selected value="10000">
+                        {%- else %}
+                    <option value="10000">
+                        {%- endif %} 10000th Read
+                    </option>
+                </optgroup>
+            </select>
+        </div>
+        {%- endif %}
+
+        {% if args.highlightsyntax %}
+        <div>
+            <label for="syntax_highlight">Syntax <sup> <a href="/guide#syntax">﹖</a></sup></label><br>
+            <select style="width: 100%;" name="syntax_highlight" id="syntax_highlight">
+                <option value="none">None</option>
+                <optgroup label="Client-Rendered">
+                    <option value="auto">Automatic</option>
+                </optgroup>
+                <optgroup label="Server-Rendered">
+                    <option value="sh">Bash Shell</option>
+                    <option value="c">C</option>
+                    <option value="cpp">C++</option>
+                    <option value="cs">C#</option>
+                    <option value="pas">Delphi</option>
+                    <option value="erl">Erlang</option>
+                    <option value="go">Go</option>
+                    <option value="hs">Haskell</option>
+                    <option value="html">HTML</option>
+                    <option value="lua">Lua</option>
+                    <option value="lisp">Lisp</option>
+                    <option value="java">Java</option>
+                    <option value="js">JavaScript</option>
+                    <option value="kt">Kotlin</option>
+                    <option value="py">Python</option>
+                    <option value="php">PHP</option>
+                    <option value="r">R</option>
+                    <option value="rs">Rust</option>
+                    <option value="rb">Ruby</option>
+                    <option value="sc">Scala</option>
+                    <option value="swift">Swift</option>
+                    <!-- no toml support ;-( -->
+                    <option value="json">TOML</option>
+                    <option value="yaml">YAML</option>
+                    <option value="json">JSON</option>
+                    <option value="xml">XML</option>
+                </optgroup>
+                </optgroup>
+            </select>
+        </div>
+        {%- else %}
+        <input type="hidden" name="syntax_highlight" value="none">
+        {%- endif %}
+
+        {% if args.encryption_client_side || args.encryption_server_side || args.enable_readonly || args.private %}
+        <div>
+            <label for="privacy">Privacy <sup> <a href="/guide#privacy">﹖</a></sup></label><br>
+            <select style="width: 100%;" name="privacy" id="privacy">
+                <optgroup label="Unencrypted (no password)">
+                    <option value="public">Public</option>
+                    {% if args.private %}
+                    <option value="unlisted">Unlisted</option>
+                    {%- endif %}
+                </optgroup>
+                {% if args.enable_readonly %}
+                <optgroup label="Unencrypted (protected)">
+                    <option value="readonly">Read-only</option>
+                </optgroup>
+                {%- endif %}
+                {% if args.encryption_client_side || args.encryption_server_side %}
+                <optgroup label="Encrypted">
+                    {% if args.encryption_server_side %}
+                    <option value="private">Private</option>
+                    {%- endif %}
+                    {% if args.encryption_client_side%}
+                    <option value="secret">Secret</option>
+                    {%- endif %}
+                </optgroup>
+                {%- endif %}
+            </select>
+        </div>
+        {%- endif %}
+
+        {% if args.encryption_client_side || args.encryption_server_side || args.enable_readonly %}
+        <div>
+            <label for="password_field">Password <sup><a href="/guide#password">﹖</a></sup></label><br>
+            <input style="width: 130px; height: 28px;" type="password" id="password_field" autocomplete="off" />
+        </div>
+        {%- endif %}
+
+    </div>
+
+    <label>Content</label>
+    <textarea style="width: 100%; min-height: 100px; margin-bottom: 2em; font-family: monospace;" id="content-input"
+        autofocus placeholder="Type something here."></textarea>
+    <div>
+        {% if !args.no_file_upload %}
+        <div id="file-select">
+            <label for="file" id="attach-file-button-label"><a role="button" id="attach-file-button">Select or drop file
+                    attachment</a></label>
+            <br>
+            <input type="file" id="file" name="file" />
+        </div>
+        {% endif %}
+        <b>
+            <input style="width: 140px; float: right; background-color:
+            #2975D2; color: white;" id="submit-button" type="submit" value="Save" />
+            {% if args.readonly %}
+            {% if status == "incorrect" %}
+            <input style="width: 160px; float: right; background-color: rgba(255, 0, 0, 0.137);" type="password"
+                id="uploader_password" name="uploader_password" placeholder="Incorrect password!" />
+            {% else %}
+            <input style="width: 160px; float: right;" type="password" id="uploader_password" name="uploader_password"
+                placeholder="Uploader Password" />
+
+            {% endif %}
+            {% endif %}
+        </b>
+    </div>
+
+    <input type="hidden" name="content" id="content">
+    <input type="hidden" name="encrypt_client" id="encrypt_client">
+    {% if args.encryption_server_side || args.enable_readonly %}
+    <input name="encrypted_random_key" type="hidden" id="encrypted_random_key" autocomplete="off" />
+    {%- endif %}
+    <input type="hidden" name="random_key" id="random_key">
+    <input type="hidden" name="plain_key" id="plain_key">
+    {% if custom_path.is_some() %}
+    <input type="hidden" name="custom_path" value="{{ custom_path.as_ref().unwrap() }}">
+    {%- endif %}
+</form>
+<br>
+<br>
+<script>
+    const form = document.getElementById("pasta-form");
+    const submitButton = document.getElementById("submit-button");
+    const passwordField = document.getElementById("password_field");
+    const privacyDropdown = document.getElementById("privacy");
+    const contentInput = document.getElementById("content-input");
+    const content = document.getElementById("content");
+    const attachFileButton = document.getElementById('attach-file-button');
+    const dropContainer = document.getElementById('pasta-form');
+    const hiddenFileButton = document.getElementById('file');
+    const hiddenRandomKeyField = document.getElementById("random_key");
+    const hiddenEncryptedRandomKeyField = document.getElementById("encrypted_random_key");
+    const hiddenPlainKeyField = document.getElementById("plain_key");
+    const hiddenEncryptedClientSide = document.getElementById("encrypt_client");
+
+    const te = new TextEncoder();
+
+    form.onsubmit = async function (event) {
+        event.preventDefault(); // prevent default form submission
+
+        // {% if args.encryption_client_side || args.encryption_server_side || args.enable_readonly %}
+        if (passwordField.value.trim() != "") {
+            // {% if !args.no_file_upload %}
+            if (fileOversized()) return false;
+            // {%- endif %}
+
+            if (privacyDropdown.value == "secret") {
+                let randomKey = Array.from(Array(16), () => Math.floor(Math.random() * 36).toString(36)).join('');
+                hiddenRandomKeyField.value = randomKey;
+                hiddenEncryptedRandomKeyField.value = encryptWithPassword(passwordField.value, randomKey);
+                if (contentInput.value.trim() != "") {
+                    content.value = encryptWithPassword(passwordField.value.trim(), contentInput.value);
+                } else {
+                    content.value = contentInput.value;
+                }
+                hiddenPlainKeyField.name = "";
+                // {% if !args.no_file_upload %}
+                await encryptFile();
+                // {%- endif %}
+            } else {
+                hiddenPlainKeyField.value = passwordField.value;
+                hiddenEncryptedClientSide.name = "";
+                hiddenEncryptedRandomKeyField.name = "";
+                hiddenRandomKeyField.name = "";
+                content.value = contentInput.value;
+            }
+        } else {
+            if (privacyDropdown.value != "public" && privacyDropdown.value != "unlisted") {
+                passwordField.focus();
+                return false;
+            }
+            hiddenEncryptedClientSide.name = "";
+            content.value = contentInput.value;
+        }
+        // {%- else %}
+        hiddenEncryptedClientSide.name = "";
+        content.value = contentInput.value;
+        // {%- endif %}
+
+        if (contentInput.value.trim() == "" && (hiddenFileButton == undefined || hiddenFileButton.files.length == 0)) {
+            contentInput.focus();
+            return false;
+        }
+
+        let showProgress = false;
+
+        submitButton.disabled = true;
+        submitButton.textContent = 'Uploading...';
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '/upload', true);
+
+        xhr.upload.onprogress = function (event) {
+            if (showProgress) {
+                const progressPercent = Math.round((event.loaded / event.total) * 100);
+                submitButton.value = `${progressPercent}%`;
+            }
+        };
+
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                if (xhr.status === 200 || xhr.status === 302) {
+                    window.location.href = xhr.responseURL;
+                } else {
+                    console.log('Request failed with status:', xhr.status);
+                }
+            }
+        };
+
+        const formData = new FormData(form);
+        xhr.send(formData);
+
+        showProgressTimeout = setTimeout(() => {
+            showProgress = true;
+        }, 1000);
+    };
+
+    function encryptWithPassword(password, plaintext) {
+        const passwordBytes = aesjs.utils.utf8.toBytes(password.padStart(32, "#"));
+        const plaintextBytes = aesjs.utils.utf8.toBytes(plaintext + "!0K");
+        const aesCtr = new aesjs.ModeOfOperation.ctr(passwordBytes);
+        const encryptedBytes = aesCtr.encrypt(plaintextBytes);
+        return aesjs.utils.hex.fromBytes(encryptedBytes);
+    }
+
+    // {% if !args.no_file_upload %}
+    function encryptFileWithPassword(password, bytes) {
+        const passwordBytes = aesjs.utils.utf8.toBytes(password.padStart(32, "#"));
+        const aesCtr = new aesjs.ModeOfOperation.ctr(passwordBytes);
+        const encryptedBytes = aesCtr.encrypt(bytes);
+        return aesjs.utils.hex.fromBytes(encryptedBytes);
+    }
+
+    function fileOversized() {
+        if (hiddenFileButton.files.length > 0) {
+            const fileSize = hiddenFileButton.files.item(0).size;
+            const fileSizeMb = fileSize / 1024 ** 2;
+
+            if (privacyDropdown.value == "secret") {
+                if (fileSizeMb >
+                    parseInt("{{ args.max_file_size_encrypted_mb }}")) {
+                    attachFileButton.textContent = "Please select a file smaller than {{ args.max_file_size_encrypted_mb }} MB";
+                    this.value = "";
+                    return true;
+                }
+            } else {
+                if (fileSizeMb >
+                    parseInt("{{ args.max_file_size_unencrypted_mb }}")) {
+                    attachFileButton.textContent = "Please select a file smaller than {{ args.max_file_size_unencrypted_mb }} MB";
+                    this.value = "";
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    function encryptFile() {
+        return new Promise((resolve, reject) => {
+            if (hiddenFileButton.files.length > 0) {
+                const file = hiddenFileButton.files[0];
+
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    const encryptedContents = encryptFileWithPassword(passwordField.value.trim(), new Uint8Array(event.target.result));
+
+                    // Replace selected file with its encrypted version
+                    const encryptedFile = new File([encryptedContents], file.name, { type: file.type });
+
+                    let container = new DataTransfer();
+                    container.items.add(encryptedFile);
+                    hiddenFileButton.files = container.files;
+                    resolve(encryptedFile);
+                };
+                reader.readAsArrayBuffer(file);
+            } else {
+                resolve();
+            }
+        });
+    }
+
+    hiddenFileButton.addEventListener('change', function () {
+        attachFileButton.textContent = "Attached: " + this.files[0].name;
+        fileOversized();
+    });
+
+    dropContainer.ondragover = dropContainer.ondragenter = function (evt) {
+        evt.preventDefault();
+        if (hiddenFileButton.files.length == 0) {
+            attachFileButton.textContent = "Drop your file here";
+        } else {
+            attachFileButton.textContent = "Drop your file here to replace " + hiddenFileButton.files[0].name;
+        }
+    };
+
+    dropContainer.ondrop = function (evt) {
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(evt.dataTransfer.files[0]);
+        hiddenFileButton.files = dataTransfer.files;
+        attachFileButton.textContent = "Attached: " + hiddenFileButton.files[0].name;
+        evt.preventDefault();
+    };
+    // {%- endif %}
+
+</script>
+
+<style>
+    input::file-selector-button {
+        display: none;
+    }
+
+    #settings {
+        display: grid;
+        grid-gap: 10px;
+        grid-template-columns: repeat(auto-fit, 152px);
+        grid-template-rows: repeat(1, 90px);
+        margin-bottom: 1rem;
+    }
+
+    select {
+        height: 3rem;
+
+    }
+
+    /* {% if !args.pure_html %} */
+    #attach-file-button-label {
+        cursor: pointer;
+        padding: 0.5rem;
+        border: #2975D2 2px dotted;
+        border-radius: 6px;
+        padding-left: 1rem;
+        padding-right: 1rem;
+        font-size: smaller;
+        min-width: 235px;
+        text-align: center;
+    }
+
+    /* {% endif %} */
+
+    #file {
+        display: none;
+    }
+
+    #file-select {
+        float: left;
+    }
+</style>
+
+{% include "footer.html" %}

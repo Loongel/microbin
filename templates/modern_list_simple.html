@@ -1,0 +1,262 @@
+{% include "modern_header_enhanced.html" %}
+
+<!-- 页面标题和统计 -->
+<div class="card">
+    <div class="card-header">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="card-title gradient-text">All Pastes</h1>
+                <p class="card-description">Browse and manage all public pastes</p>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="text-sm text-secondary">
+                    <span class="font-semibold">{{ pastas|length }}</span> pastes total
+                </div>
+                <a href="/" class="btn btn-primary">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path>
+                    </svg>
+                    New Paste
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 搜索和过滤 -->
+<div class="card mb-6">
+    <div class="flex flex-col md:flex-row gap-4">
+        <div class="flex-1">
+            <input 
+                type="text" 
+                id="search-input" 
+                class="form-input" 
+                placeholder="🔍 Search pastes by content, filename, or path..."
+                onkeyup="filterPastas()"
+            >
+        </div>
+        <div class="flex gap-2">
+            <select id="type-filter" class="form-select" onchange="filterPastas()">
+                <option value="">All Types</option>
+                <option value="text">📝 Text</option>
+                <option value="url">🔗 URL</option>
+                <option value="file">📎 File</option>
+            </select>
+            <select id="sort-filter" class="form-select" onchange="sortPastas()">
+                <option value="newest">🕒 Newest First</option>
+                <option value="oldest">⏰ Oldest First</option>
+                <option value="name">📝 By Name</option>
+                <option value="size">📏 By Size</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<!-- Pasta列表 -->
+<div id="pasta-list" class="space-y-4">
+    {% for pasta in pastas %}
+    <div class="pasta-item card hover-lift" data-type="{{ pasta.pasta_type }}" data-content="{{ pasta.content|lower }}" data-name="{{ pasta.get_path()|lower }}" data-created="{{ pasta.created }}">
+        <div class="flex items-start gap-4">
+
+            <div class="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center text-white text-xl">
+                {% if pasta.pasta_type == "url" %}
+                <div class="bg-blue-500 w-full h-full rounded-xl flex items-center justify-center">
+                    <svg width="24" height="24" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5z" clip-rule="evenodd"></path>
+                        <path d="M7.414 15.414a2 2 0 01-2.828-2.828l3-3a2 2 0 012.828 0 1 1 0 001.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5z"></path>
+                    </svg>
+                </div>
+                {% elif pasta.file.is_some() %}
+                <div class="bg-green-500 w-full h-full rounded-xl flex items-center justify-center">
+                    <svg width="24" height="24" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                    </svg>
+                </div>
+                {% else %}
+                <div class="bg-purple-500 w-full h-full rounded-xl flex items-center justify-center">
+                    <svg width="24" height="24" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
+                    </svg>
+                </div>
+                {%- endif %}
+            </div>
+
+            <div class="flex-1 min-w-0">
+                <div class="flex items-start justify-between gap-4">
+                    <div class="min-w-0 flex-1">
+
+                        <h3 class="font-semibold text-lg mb-1">
+                            <a href="/{{pasta.get_path()}}" class="text-primary hover:text-primary-hover transition-colors">
+                                {% if pasta.custom_path.is_some() %}
+                                {{ pasta.custom_path.as_ref().unwrap() }}
+                                {% elif pasta.file.is_some() %}
+                                {{ pasta.file.as_ref().unwrap().name }}
+                                {% else %}
+                                {{ pasta.id_as_animals() }}
+                                {%- endif %}
+                            </a>
+                        </h3>
+
+                        {% if pasta.pasta_type == "url" %}
+                        <p class="text-secondary text-sm mb-2 break-all">
+                            🔗 {{ pasta.content }}
+                        </p>
+                        {% elif pasta.file.is_some() %}
+                        <p class="text-secondary text-sm mb-2">
+                            📎 {{ pasta.file.as_ref().unwrap().name }} ({{ pasta.file.as_ref().unwrap().size }} bytes)
+                        </p>
+                        {% elif pasta.content != "" %}
+                        <p class="text-secondary text-sm mb-2 line-clamp-2">
+                            {{ pasta.content|truncate(length=150) }}
+                        </p>
+                        {%- endif %}
+
+                        <div class="flex items-center gap-4 text-xs text-tertiary">
+                            <span class="flex items-center gap-1">
+                                <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+                                </svg>
+                                {{ pasta.created_as_string() }}
+                            </span>
+                            
+                            {% if pasta.expiration != 0 %}
+                            <span class="flex items-center gap-1">
+                                <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                                </svg>
+                                Expires {{ pasta.expiration_as_string() }}
+                            </span>
+                            {%- endif %}
+                            
+                            {% if pasta.burn_after_reads != 0 %}
+                            <span class="flex items-center gap-1">
+                                <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd"></path>
+                                </svg>
+                                🔥 {{ pasta.burn_after_reads }} reads
+                            </span>
+                            {%- endif %}
+                            
+                            {% if pasta.extension != "" %}
+                            <span class="px-2 py-1 bg-primary-100 text-primary-800 rounded-md font-medium">
+                                {{ pasta.extension }}
+                            </span>
+                            {%- endif %}
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                        <button class="copy-button btn btn-outline btn-sm" data-url="/{{pasta.get_path()}}">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"></path>
+                                <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"></path>
+                            </svg>
+                            Copy
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- 空状态 -->
+<div id="empty-state" class="card text-center py-12" style="display: none;">
+    <div class="text-6xl mb-4">📝</div>
+    <h3 class="text-xl font-semibold mb-2">No pastes found</h3>
+    <p class="text-secondary mb-6">Try adjusting your search or create a new paste</p>
+    <a href="/" class="btn btn-primary">Create Your First Paste</a>
+</div>
+
+<!-- 脚本 -->
+<script>
+    // 复制功能
+    const copyURLBtns = document.querySelectorAll('.copy-button');
+    for (let i = 0; i < copyURLBtns.length; i++) {
+        copyURLBtns.item(i).addEventListener("click", event => {
+            const element = event.currentTarget;
+            const url = window.location.origin + element.getAttribute("data-url");
+            copyToClipboard(url, element);
+        });
+    }
+
+    // 搜索和过滤功能
+    function filterPastas() {
+        const searchTerm = document.getElementById('search-input').value.toLowerCase();
+        const typeFilter = document.getElementById('type-filter').value;
+        const pastaItems = document.querySelectorAll('.pasta-item');
+        let visibleCount = 0;
+
+        pastaItems.forEach(item => {
+            const content = item.getAttribute('data-content');
+            const name = item.getAttribute('data-name');
+            const type = item.getAttribute('data-type');
+            
+            const matchesSearch = !searchTerm || 
+                content.includes(searchTerm) || 
+                name.includes(searchTerm);
+            const matchesType = !typeFilter || type === typeFilter;
+            
+            if (matchesSearch && matchesType) {
+                item.style.display = 'block';
+                visibleCount++;
+            } else {
+                item.style.display = 'none';
+            }
+        });
+
+        // 显示/隐藏空状态
+        const emptyState = document.getElementById('empty-state');
+        if (visibleCount === 0) {
+            emptyState.style.display = 'block';
+        } else {
+            emptyState.style.display = 'none';
+        }
+    }
+
+    // 排序功能
+    function sortPastas() {
+        const sortBy = document.getElementById('sort-filter').value;
+        const pastaList = document.getElementById('pasta-list');
+        const pastaItems = Array.from(document.querySelectorAll('.pasta-item'));
+
+        pastaItems.sort((a, b) => {
+            switch (sortBy) {
+                case 'newest':
+                    return parseInt(b.getAttribute('data-created')) - parseInt(a.getAttribute('data-created'));
+                case 'oldest':
+                    return parseInt(a.getAttribute('data-created')) - parseInt(b.getAttribute('data-created'));
+                case 'name':
+                    return a.getAttribute('data-name').localeCompare(b.getAttribute('data-name'));
+                case 'size':
+                    const aContent = a.getAttribute('data-content');
+                    const bContent = b.getAttribute('data-content');
+                    return bContent.length - aContent.length;
+                default:
+                    return 0;
+            }
+        });
+
+        // 重新排列DOM元素
+        pastaItems.forEach(item => {
+            pastaList.appendChild(item);
+        });
+    }
+
+    // 键盘快捷键
+    document.addEventListener('keydown', function(e) {
+        // Ctrl/Cmd + F: 聚焦搜索框
+        if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+            e.preventDefault();
+            document.getElementById('search-input').focus();
+        }
+    });
+
+    // 实时搜索
+    document.getElementById('search-input').addEventListener('input', function() {
+        setTimeout(filterPastas, 300);
+    });
+</script>
+
+{% include "modern_footer_enhanced.html" %}

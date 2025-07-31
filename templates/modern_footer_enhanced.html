@@ -1,0 +1,456 @@
+    </main>
+    
+    {% if !args.hide_footer %}
+    <footer class="page-footer">
+        <div class="container">
+            <div class="footer-content">
+                {% if args.footer_text.as_ref().is_some() %}
+                <p class="footer-text">
+                    {{ args.footer_text.as_ref().unwrap() }}
+                </p>
+                {%- endif %}
+
+                <p class="footer-text">
+                    Powered by
+                    <a href="https://microbin.eu" style="color: var(--color-primary); text-decoration: none; font-weight: var(--font-weight-medium);">
+                        MicroBin
+                    </a>
+                </p>
+            </div>
+        </div>
+    </footer>
+    {%- endif %}
+
+    <!-- 性能监控和错误处理 -->
+    <script>
+        // 错误处理
+        window.addEventListener('error', function(e) {
+            console.error('JavaScript Error:', e.error);
+        });
+
+        // 未处理的Promise拒绝
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('Unhandled Promise Rejection:', e.reason);
+        });
+
+        // 页面可见性变化处理
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                // 页面隐藏时暂停动画
+                document.body.classList.add('page-hidden');
+            } else {
+                // 页面显示时恢复动画
+                document.body.classList.remove('page-hidden');
+            }
+        });
+
+        // 网络状态监控
+        window.addEventListener('online', function() {
+            console.log('Network: Online');
+            // 可以在这里添加网络恢复的处理逻辑
+        });
+
+        window.addEventListener('offline', function() {
+            console.log('Network: Offline');
+            // 可以在这里添加离线状态的处理逻辑
+        });
+
+        // 页面性能监控
+        window.addEventListener('load', function() {
+            // 使用 requestIdleCallback 在浏览器空闲时执行性能监控
+            if ('requestIdleCallback' in window) {
+                requestIdleCallback(function() {
+                    if ('performance' in window && 'getEntriesByType' in performance) {
+                        const navigation = performance.getEntriesByType('navigation')[0];
+                        if (navigation) {
+                            console.log('Performance Metrics:', {
+                                'DNS Lookup': navigation.domainLookupEnd - navigation.domainLookupStart,
+                                'TCP Connection': navigation.connectEnd - navigation.connectStart,
+                                'Request': navigation.responseStart - navigation.requestStart,
+                                'Response': navigation.responseEnd - navigation.responseStart,
+                                'DOM Processing': navigation.domContentLoadedEventStart - navigation.responseEnd,
+                                'Total Load Time': navigation.loadEventEnd - navigation.navigationStart
+                            });
+                        }
+                    }
+                });
+            }
+        });
+
+        // 主题切换功能
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeButton(newTheme);
+        }
+
+        // 更新主题按钮显示
+        function updateThemeButton(theme) {
+            const lightIcon = document.getElementById('theme-icon-light');
+            const darkIcon = document.getElementById('theme-icon-dark');
+            const themeText = document.getElementById('theme-text');
+
+            if (theme === 'dark') {
+                lightIcon.style.display = 'block';
+                darkIcon.style.display = 'none';
+                themeText.textContent = 'Light';
+            } else {
+                lightIcon.style.display = 'none';
+                darkIcon.style.display = 'block';
+                themeText.textContent = 'Dark';
+            }
+        }
+
+        // 恢复用户主题偏好
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            const theme = savedTheme || systemTheme;
+            document.documentElement.setAttribute('data-theme', theme);
+            updateThemeButton(theme);
+        }
+
+        // 监听系统主题变化
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+            if (!localStorage.getItem('theme')) {
+                const theme = e.matches ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-theme', theme);
+                updateThemeButton(theme);
+            }
+        });
+
+        // 初始化主题
+        initTheme();
+
+        // 初始化自定义路径
+        initCustomPath();
+
+        // 初始化国际化
+        initI18n();
+
+        // 初始化现代化UI交互
+        initModernUI();
+
+        // 自动填入自定义路径功能
+        function initCustomPath() {
+            const customPathInput = document.getElementById('custom_path');
+            if (customPathInput && customPathInput.value === '') {
+                // 从URL路径中提取可能的自定义路径
+                const path = window.location.pathname;
+                const pathSegments = path.split('/').filter(segment => segment !== '');
+
+                // 如果URL包含路径段且不是系统路径，则自动填入
+                if (pathSegments.length > 0) {
+                    const lastSegment = pathSegments[pathSegments.length - 1];
+                    const systemPaths = ['list', 'guide', 'upload', 'edit', 'remove', 'qr', 'raw', 'file', 'url'];
+
+                    if (!systemPaths.includes(lastSegment) && /^[a-zA-Z0-9\-_]+$/.test(lastSegment)) {
+                        customPathInput.value = lastSegment;
+                        customPathInput.focus();
+                        customPathInput.select();
+                    }
+                }
+            }
+        }
+
+        // 国际化功能
+        const i18nData = {
+            zh: {
+                title: '剪切板',
+                subtitle: '快速分享文本和文件',
+                content_label: '内容',
+                content_placeholder: '在这里输入内容...',
+                file_upload: '拖拽文件到这里或点击选择',
+                settings: '设置',
+                expiration: '过期时间',
+                expire_after: '过期时间',
+                '1min': '1分钟',
+                '10min': '10分钟',
+                '1hour': '1小时',
+                '24hour': '24小时',
+                '3days': '3天',
+                '1week': '1周',
+                never: '永不过期',
+                burn_after: '阅读后销毁',
+                no_limit: '无限制',
+                burn_after_reads: '销毁条件',
+                first_read: '首次阅读',
+                '10th_read': '第10次阅读',
+                '100th_read': '第100次阅读',
+                '1000th_read': '第1000次阅读',
+                '10000th_read': '第10000次阅读',
+                syntax: '语法高亮',
+                none: '无',
+                client_rendered: '客户端渲染',
+                automatic: '自动检测',
+                server_rendered: '服务端渲染',
+                privacy: '隐私设置',
+                unencrypted_no_password: '未加密（无密码）',
+                public: '公开',
+                unencrypted_protected: '未加密（受保护）',
+                readonly: '只读',
+                encrypted: '加密',
+                secret: '加密',
+                password: '密码',
+                password_placeholder: '输入密码',
+                custom_path: '自定义路径',
+                custom_path_placeholder: 'my-paste',
+                save: '保存'
+            },
+            en: {
+                title: 'Clipboard',
+                subtitle: 'Share text and files quickly',
+                content_label: 'Content',
+                content_placeholder: 'Type something here...',
+                file_upload: 'Drag files here or click to select',
+                settings: 'Settings',
+                expiration: 'Expiration',
+                expire_after: 'Expire after',
+                '1min': '1 minute',
+                '10min': '10 minutes',
+                '1hour': '1 hour',
+                '24hour': '24 hours',
+                '3days': '3 days',
+                '1week': '1 week',
+                never: 'Never Expire',
+                burn_after: 'Burn After Reading',
+                no_limit: 'No Limit',
+                burn_after_reads: 'Burn after',
+                first_read: 'First Read',
+                '10th_read': '10th Read',
+                '100th_read': '100th Read',
+                '1000th_read': '1000th Read',
+                '10000th_read': '10000th Read',
+                syntax: 'Syntax Highlighting',
+                none: 'None',
+                client_rendered: 'Client-Rendered',
+                automatic: 'Automatic',
+                server_rendered: 'Server-Rendered',
+                privacy: 'Privacy',
+                unencrypted_no_password: 'Unencrypted (no password)',
+                public: 'Public',
+                unencrypted_protected: 'Unencrypted (protected)',
+                readonly: 'Read-only',
+                encrypted: 'Encrypted',
+                secret: 'Secret',
+                password: 'Password',
+                password_placeholder: 'Enter password',
+                custom_path: 'Custom Path',
+                custom_path_placeholder: 'my-paste',
+                save: 'Save'
+            }
+        };
+
+        // 键盘快捷键支持
+        document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + K: 快速搜索（如果有搜索功能）
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                // 这里可以添加搜索功能的触发逻辑
+            }
+            
+            // Ctrl/Cmd + Enter: 快速提交表单
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                const activeForm = document.querySelector('form:focus-within');
+                if (activeForm) {
+                    const submitBtn = activeForm.querySelector('input[type="submit"], button[type="submit"]');
+                    if (submitBtn && !submitBtn.disabled) {
+                        submitBtn.click();
+                    }
+                }
+            }
+        });
+
+        // 滚动性能优化
+        let ticking = false;
+        function updateScrollPosition() {
+            const scrolled = window.pageYOffset;
+            const navbar = document.querySelector('.navbar');
+            
+            if (navbar) {
+                if (scrolled > 100) {
+                    navbar.classList.add('scrolled');
+                } else {
+                    navbar.classList.remove('scrolled');
+                }
+            }
+            
+            ticking = false;
+        }
+
+        window.addEventListener('scroll', function() {
+            if (!ticking) {
+                requestAnimationFrame(updateScrollPosition);
+                ticking = true;
+            }
+        });
+
+        // 添加滚动时导航栏样式
+        const style = document.createElement('style');
+        style.textContent = `
+            .navbar.scrolled {
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(20px);
+                box-shadow: var(--shadow-lg);
+            }
+            
+            @media (prefers-color-scheme: dark) {
+                .navbar.scrolled {
+                    background: rgba(30, 41, 59, 0.95);
+                }
+            }
+            
+            .page-hidden * {
+                animation-play-state: paused !important;
+            }
+            
+            .keyboard-navigation *:focus {
+                outline: 2px solid var(--color-primary) !important;
+                outline-offset: 2px !important;
+            }
+        `;
+        document.head.appendChild(style);
+
+        function initI18n() {
+            const languageSelect = document.getElementById('language-select');
+            if (!languageSelect) return;
+
+            // 检测浏览器语言
+            const browserLang = navigator.language || navigator.userLanguage;
+            const defaultLang = browserLang.startsWith('zh') ? 'zh' : 'en';
+
+            // 从localStorage获取保存的语言设置
+            const savedLang = localStorage.getItem('language') || defaultLang;
+            languageSelect.value = savedLang;
+
+            // 应用语言
+            applyLanguage(savedLang);
+
+            // 监听语言切换
+            languageSelect.addEventListener('change', function() {
+                const selectedLang = this.value;
+                localStorage.setItem('language', selectedLang);
+                applyLanguage(selectedLang);
+            });
+        }
+
+        function applyLanguage(lang) {
+            const data = i18nData[lang] || i18nData.en;
+
+            // 更新所有带有data-i18n属性的元素
+            document.querySelectorAll('[data-i18n]').forEach(element => {
+                const key = element.getAttribute('data-i18n');
+                if (data[key]) {
+                    element.textContent = data[key];
+                }
+            });
+
+            // 更新placeholder
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
+                const key = element.getAttribute('data-i18n-placeholder');
+                if (data[key]) {
+                    element.placeholder = data[key];
+                }
+            });
+
+            // 更新optgroup标签
+            document.querySelectorAll('optgroup[data-i18n]').forEach(element => {
+                const key = element.getAttribute('data-i18n');
+                if (data[key]) {
+                    element.label = data[key];
+                }
+            });
+        }
+
+        function initModernUI() {
+            // 设置面板切换
+            const settingsToggle = document.getElementById('settings-toggle');
+            const settingsContent = document.getElementById('settings-content');
+
+            if (settingsToggle && settingsContent) {
+                settingsToggle.addEventListener('click', function() {
+                    settingsContent.classList.toggle('expanded');
+                });
+            }
+
+            // 隐私设置变化时显示/隐藏密码字段
+            const privacySelect = document.getElementById('privacy');
+            const passwordGroup = document.getElementById('password-group');
+
+            if (privacySelect && passwordGroup) {
+                privacySelect.addEventListener('change', function() {
+                    const value = this.value;
+                    if (value === 'readonly' || value === 'secret') {
+                        passwordGroup.style.display = 'block';
+                    } else {
+                        passwordGroup.style.display = 'none';
+                    }
+                });
+            }
+
+            // 文件上传拖拽功能
+            const fileUploadArea = document.getElementById('file-upload-area');
+            const fileInput = document.getElementById('file');
+
+            if (fileUploadArea && fileInput) {
+                fileUploadArea.addEventListener('click', () => fileInput.click());
+
+                fileUploadArea.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    this.classList.add('dragover');
+                });
+
+                fileUploadArea.addEventListener('dragleave', function(e) {
+                    e.preventDefault();
+                    this.classList.remove('dragover');
+                });
+
+                fileUploadArea.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    this.classList.remove('dragover');
+
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                        fileInput.files = files;
+                        updateFileUploadDisplay(files[0]);
+                    }
+                });
+
+                fileInput.addEventListener('change', function() {
+                    if (this.files.length > 0) {
+                        updateFileUploadDisplay(this.files[0]);
+                    }
+                });
+            }
+
+            // Textarea自动调整高度
+            const textarea = document.getElementById('content-input');
+            if (textarea) {
+                textarea.addEventListener('input', function() {
+                    adjustTextareaHeight(this);
+                });
+
+                // 初始调整
+                adjustTextareaHeight(textarea);
+            }
+        }
+
+        function updateFileUploadDisplay(file) {
+            const fileUploadText = document.querySelector('.file-upload-text');
+            if (fileUploadText) {
+                const lang = localStorage.getItem('language') || 'zh';
+                const text = lang === 'zh' ? `已选择: ${file.name} (${formatFileSize(file.size)})` : `Selected: ${file.name} (${formatFileSize(file.size)})`;
+                fileUploadText.textContent = text;
+            }
+        }
+
+        function adjustTextareaHeight(textarea) {
+            textarea.style.height = 'auto';
+            const newHeight = Math.min(Math.max(textarea.scrollHeight, 120), 400);
+            textarea.style.height = newHeight + 'px';
+        }
+    </script>
+</body>
+</html>

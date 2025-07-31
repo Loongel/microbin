@@ -1,0 +1,41 @@
+{% include "header.html" %}
+
+<div style="max-width: 400px; margin: 100px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background-color: #f9f9f9;">
+    <h2 style="text-align: center; margin-bottom: 30px;">Access Required</h2>
+    
+    {% if error_message %}
+    <div style="background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 5px; padding: 10px; margin-bottom: 20px; color: #721c24;">
+        {{ error_message }}
+    </div>
+    {% endif %}
+    
+    <form method="POST" action="/login">
+        <div style="margin-bottom: 20px;">
+            <label for="access_password" style="display: block; margin-bottom: 5px; font-weight: bold;">Password:</label>
+            <input type="password" id="access_password" name="access_password" 
+                   style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;"
+                   placeholder="Enter access password" required autofocus>
+        </div>
+        
+        <input type="hidden" name="redirect_to" value="{{ redirect_to }}">
+        
+        <div style="text-align: center;">
+            <input type="submit" value="Login" 
+                   style="background-color: #2975D2; color: white; padding: 10px 30px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px;">
+        </div>
+    </form>
+</div>
+
+<style>
+    input[type="submit"]:hover {
+        background-color: #1e5bb8;
+    }
+    
+    input[type="password"]:focus {
+        outline: none;
+        border-color: #2975D2;
+        box-shadow: 0 0 5px rgba(41, 117, 210, 0.3);
+    }
+</style>
+
+{% include "footer.html" %}

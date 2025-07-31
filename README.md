@@ -1,12 +1,12 @@
 
-![Screenshot](.github/index.png)
+![Screenshot](https://raw.githubusercontent.com/szabodanika/microbin/refs/heads/master/.github/index.png)## 
 
 # 修改
 - 增加地定义路径
 - 增加随机路径及长度限制机制，通过环境变量控制
 - 原本依赖public_path环境变量的功能，都可独立工作
 
-# MicroBin
+# MicroBin (fork from https://github.com/szabodanika/microbin )
 
 ![Build](https://github.com/szabodanika/microbin/actions/workflows/rust.yml/badge.svg)
 [![crates.io](https://img.shields.io/crates/v/microbin.svg)](https://crates.io/crates/microbin)
